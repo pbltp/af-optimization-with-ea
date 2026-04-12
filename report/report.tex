@@ -1,0 +1,188 @@
+\documentclass[12pt,fleqn,a4paper]{article}
+
+\usepackage{latexsym}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage{epsfig}
+\usepackage{psfrag}
+\usepackage{a4wide}
+\usepackage{marvosym}
+\usepackage{amsmath,amsfonts,amssymb,amsthm,latexsym}
+\usepackage{graphics,graphicx,color,subfigure}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+
+\textheight 680pt
+\textwidth 460pt
+\topmargin -40pt
+\oddsidemargin 5pt
+\evensidemargin 5pt
+\parindent 0pt
+
+\pagestyle{fancyplain} \setlength{\headheight}{16pt}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\lhead[\fancyplain{}{\thepage}]
+    {\fancyplain{}{\rightmark}}
+\rhead[\fancyplain{}{\leftmark}]
+    {\fancyplain{}{\thepage}}
+\cfoot{}
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+
+
+\begin{document}
+\begin{titlepage}%Institution
+\vspace{2cm}
+\centerline{
+\large{Department of Artificial Intelligence and Human Interfaces}}
+\vspace{0.2cm}
+\centerline{\large{University of Salzburg}}%Optimizing Activation Function Distribution using Evolutionary Algorithms
+%\hline
+\vspace{2cm}
+
+\centerline{\large{PS Natural Computation}}
+\centerline{SS 24}
+\vspace{1cm}
+
+\centerline{\Large{\bf{Title}} }%Type of the Document
+\vspace{1cm}
+
+\vspace{0.4cm}%Date
+\centerline{\today}
+\vspace{5cm}%Authors
+
+%\hline
+\vspace{0.2cm}
+Project Members:\\
+\centerline{Ante Krajnovic, 12244629, ante.krajinovic@stud.plus.ac.at}\\
+\centerline{Khalil Ibrahim, 11803004, khalil.ibrahim2@stud.plus.ac.at}\\
+\centerline{Mitsuhiro Kitajima, 12314106, mitsuhiro.kitajima@stud.plus.ac.at}\\
+\centerline{Peter Balint, 12213073, peter.balint@stud.plus.ac.at}\\
+\centerline{\ldots}
+\vspace {1cm}\\
+
+Academic Supervisor: \\
+\centerline{Helmut MAYER}
+\centerline{helmut@cosy.sbg.ac.at}
+\vspace{1.5cm}\\
+Correspondence to: \\
+\centerline{Universit\"{a}t Salzburg} \\
+\centerline{Fachbereich AIHI} \\
+\centerline{Jakob--Haringer--Stra\ss e 2} \\
+\centerline{A--5020 Salzburg} \\
+\centerline{Austria}
+\clearpage
+\end{titlepage}
+
+%Table of Content
+% \setcounter{page}{1}
+% \pagenumbering{Roman} %I,II,III... in the TOC
+% \tableofcontents
+
+\clearpage
+\pagestyle{headings}
+\pagenumbering{arabic}  %Better if TOC is variable (more than one page)
+\setcounter{page}{1}
+\pagenumbering{arabic}  %Better if TOC is variable (more than one page)
+\setcounter{page}{1}
+
+\abstract{This is a report for the Natural Computation class of Prof. Mayer
+in 2026, discussing optimization of activation function distribution using
+evolutionary algorithms in an artificial neural network.}
+
+\section{Introduction}
+
+In a typical artificial neural network, usually only one activation function
+is used for all neurons.  However, it is also possible to encode a different
+activation function for every neuron, with the hope that better results can
+be achieved.  The distribution of the activation functions in this case is a
+good target for optimization.
+
+Our group has been assigned the task of performing this optimization in a
+basic artificial neural network by means of a basic evolutionary algorithm.
+Our experiments will be performed on benchmarks and data provided by the
+"basics" group.  (TBA: discussion after we get the data)
+
+We are planning to use the PyTorch framework for our work.  (TBA: discussion
+after we implemented it)
+
+\newpage
+
+\section{Milestones} % NOT in final paper
+\begin{itemize}
+\item{Familiarize ourselves with topic. Until: 25.03.2026}
+\item{Experiment with assigning individual activation functions per neuron
+and modifying this assignment, based on experimential data of the basics
+group.  Until: 06.05.2026}
+\item{Experiment with using an evolutionary algorithm to adjust the
+activation functions. Until: 20.05.2026}
+\item{Create a framework for evaluation of evolutionary algorithms.
+Until: 03.06.2026}
+\item{Finalize report. Until: TBA}
+\end{itemize}
+
+\newpage
+
+\section{Progress of Work} % NOT in final paper
+
+\subsection{Week 1, Wednesday, 04.03.2026}
+
+Lecture introduction.
+
+\subsection{Week 2, Wednesday, 11.03.2026}
+
+Proseminar introduction.
+
+\subsection{Week 3, Wednesday, 25.03.2026}
+
+First presentation: introduction to the topic.  (By Khalil)
+
+\subsection{Week 4, Wednesday, 22.04.2026}
+
+Second presentation: assignment of responsibilities, organization.
+
+\subsection{Week 5, Wednesday, 06.05.2026}
+
+\subsection{Week 6, Wednesday, 20.05.2026}
+
+\subsection{Week 7, Wednesday, 03.06.2026}
+
+\subsection{Week 8, Wednesday, 17.06.2026}
+
+\subsection{Week 9, Wednesday, 24.06.2026}
+
+(?)
+
+\newpage
+
+\section{Subproject Responsibilities} % NOT in final paper
+
+\begin{itemize}
+\item Research prior art/references: ...
+\item Research possible (modern) activation functions: ...
+\item Implement assignment of AFs to individual neurons in PyTorch: ...
+\item Research/design a possible evolutionary algorithm (for AF optimization): ...
+\item Implement the evolutionary algorithm in PyTorch: ...
+\item Experiment with different evolutionary algorithms (?): ...
+\item Charts: ...
+\item Report, editing: ...
+\end{itemize}
+
+
+\newpage
+
+% links go here, NOT in references
+\section{Links}
+
+\begin{itemize}
+\item Project Page: \url{http://student.cosy.sbg.ac.at/~pbalint/nc/}
+\item PS Page:
+\url{http://www.cosy.sbg.ac.at/~helmut/Teaching/PSRobotik/}
+
+\end{itemize}
+
+% real scientific references
+\bibliography{}		% .bib files here
+
+\end{document}
