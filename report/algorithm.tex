@@ -1,0 +1,82 @@
+\subsection{Overview}
+In this section, we describe how we have designed the evolutionary algorithm for
+optimizing the distribution of activation functions in the hidden layer(s) of a neural network.
+As an assumption, we consider a neural network with one or more hidden layers.
+Let \(v=\{v_1, v_2, \dots, v_n\} \) be a raw output of the hidden layer and 
+\(f = \{f_1, f_2, \dots, f_n\}\) be the activation functions applied to each neuron in the hidden layer, respectively,
+where \(f_i \in \mathcal{F}\) for \(i=1,\dots,n\) and \(\mathcal{F}\) is the set of activation functions (we call \(\mathcal{F}\) the ``function pool'').
+\subsection{Algorithm}
+We use a simple genetic algorithm for the optimization.
+For the sake of simplicity, the algorithm assumes a single hidden layer for a neural network. For a neural network with $N>1$ layers, we use either concatenated activation function layers as an individual, or another method that fits better.
+
+\begin{algorithm}[H]
+\caption{Optimization of Activation Function Distribution}
+\label{alg:optimization}
+\begin{algorithmic}[1]
+\REQUIRE Population $P$ of size $M$, function pool $\mathcal{F} = \{f_1, \dots, f_n\}$, max generations $g$
+\STATE Initialize $P^0$ with random functions from $\mathcal{F}$ for each individual $i \in \{1,\dots,M\}$
+\STATE Initialize $f_{best}$
+\STATE 
+\FOR{$t = 0$ to $g$}
+    \FOR{$i = 1$ to $M$}
+        \STATE Evaluate fitness of $P^t_i$ by training NN with $P^t_i$
+        \IF{$fitness(P^t_i) > fitness(f_{best})$}
+            \STATE $f_{best} = P^t_i$
+        \ENDIF
+    \ENDFOR
+    \STATE Select new population $P^{t+1}$ from $P^t$ using selection operator
+    \STATE Mutate $P^{t+1}$ using mutation operator
+\ENDFOR
+\RETURN $f_{best}$
+\end{algorithmic}
+\end{algorithm}
+\subsection{Proposal of Operators}
+\subsubsection{Selection}
+For the selection of individuals from the current generation $P^t$ to the next generation $P^{t+1}$, we use a combination of elitism and tournament selection. We initially set $k=2$, meaning the selection process involves 4 randomly selected individuals from $P^t$.
+\begin{algorithm}[H]
+\caption{Selection($k$)}
+\label{alg:selection}
+\begin{algorithmic}[1]
+\STATE Select $f_{best}\in P^t$
+\STATE Add $f_{best}$ to $P^{t+1}$ 
+\WHILE{$P^{t+1}$ is not full}
+\STATE Select $k$ individuals from $P^t$ uniformly at random 
+\STATE Set the best fitting individual as $f_A$
+\STATE Select $k$ individuals from $P^t$ uniformly at random again
+\STATE Set the best fitting individual as $f_B$
+\STATE Execute $Crossover(f_A, f_B)$ with probability $p_c$
+\IF {Crossover is executed}
+\STATE Add $f_C$ to $P^{t+1}$
+\ELSE \STATE Add $\max_{fitness(f)}\{f_A, f_B\}$ to $P^{t+1}$
+\ENDIF
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+\subsubsection{Crossover}
+We use uniform crossover. The algorithm takes two parents as input and returns one child. 
+The probability of crossover is initially set to $0.8$. Although this probability may be varied in experiments, it will remain high.
+\begin{algorithm}[H]
+\caption{Crossover($f_A, f_B$)}
+\label{alg:crossover}
+\begin{algorithmic}[1]
+\STATE Initialize $f_C$
+\FOR{each $({f_A}_i,{f_B}_i)$ in $f_A, f_B$}
+\STATE ${f_C}_i = {f_A}_i$ with probability $0.5$
+\STATE Otherwise, ${f_C}_i = {f_B}_i$
+\ENDFOR
+\RETURN $f_C$
+\end{algorithmic}
+\end{algorithm}
+\subsubsection{Mutation}
+Mutation is implemented in the form of randomly drawing functions from the function pool to replace selected elements in an individual.
+The probability of mutation is initially set to $0.01$. Although this probability may be varied in experiments, it will remain very low. The number of mutated elements, $l$, is set to approximately 20\% of the length of the individual.
+\begin{algorithm}[H]
+\caption{Mutation($f, l$)}
+\label{alg:mutation}
+\begin{algorithmic}[1]
+\STATE Select $l$ elements from $f$ uniformly at random
+\FOR {each selected element $f_i$}
+\STATE Replace $f_i$ with a randomly selected $f_s \in \mathcal{F}\setminus\{f_i\}$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
