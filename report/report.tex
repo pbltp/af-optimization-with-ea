@@ -146,6 +146,7 @@ First presentation: introduction to the topic.  (By Khalil)
 Second presentation: assignment of responsibilities, organization.
 
 \subsection{Week 5, Wednesday, 06.05.2026}
+Third presentation: Activation Functions (By Khalil)
 
 \subsection{Week 6, Wednesday, 20.05.2026}
 
@@ -172,6 +173,129 @@ Second presentation: assignment of responsibilities, organization.
 \item Report, editing: Peter Balint
 \end{itemize}
 
+\newpage
+\section{Activation Functions}
+
+Activation functions determine how strongly a neuron ``fires'' and are a fundamental component of artificial neural networks. Their primary role is to introduce non-linearity into the model. Without activation functions, a neural network, regardless of its depth, would collapse into a purely linear function.
+
+Therefore, activation functions are essential for both learning capability and overall performance of neural networks.
+
+\subsection{Classical Activation Functions}
+
+One of the earliest and most commonly used activation functions is the sigmoid function. It maps input values into the range $(0, 1)$. However, sigmoid suffers from saturation for large positive or negative inputs, which leads to vanishing gradients and consequently slow learning.
+
+\begin{equation}
+\sigma(x) = \frac{1}{1 + e^{-x}}
+\end{equation}
+
+Another classical function is \textit{tanh}, which outputs values in the range $(-1, 1)$. Compared to sigmoid, tanh is generally more effective due to its zero-centered output, but it also suffers from saturation problems.
+\begin{equation}
+\tanh(x) = \frac{e^{x} - e^{-x}}{e^{x} + e^{-x}}
+\end{equation}
+
+The step function is a historical activation function that outputs either 0 or 1. It is no longer used in modern neural networks because it is not differentiable and therefore incompatible with gradient-based optimization methods.
+\begin{equation}
+f(x) =
+\begin{cases}
+1 & \text{if } x \geq 0 \\
+0 & \text{if } x < 0
+\end{cases}
+\end{equation}
+
+A major breakthrough was the introduction of the ReLU (Rectified Linear Unit) function:
+
+\begin{equation}
+f(x) = \max(0, x)
+\end{equation}
+
+ReLU is computationally efficient and significantly improves training speed and stability. However, it introduces the so-called \textit{dying ReLU} problem, where neurons can become permanently inactive.
+
+\subsection{Modern Activation Functions}
+
+To address limitations of classical approaches, several modern activation functions have been proposed.
+
+Leaky ReLU introduces a small negative slope for negative inputs, preventing dead neurons.
+\textbf{Leaky ReLU:}
+\begin{equation}
+f(x) =
+\begin{cases}
+x & \text{if } x \geq 0 \\
+\alpha x & \text{if } x < 0
+\end{cases}
+\end{equation}
+
+PReLU extends Leaky ReLU by making the negative slope a learnable parameter.
+\textbf{PReLU:}
+\begin{equation}
+f(x) =
+\begin{cases}
+x & \text{if } x \geq 0 \\
+a x & \text{if } x < 0
+\end{cases}
+\quad \text{where } a \text{ is learnable}
+\end{equation}
+
+ELU (Exponential Linear Unit) provides a smoother transition for negative values and improves training stability.
+\textbf{ELU:}
+\begin{equation}
+f(x) =
+\begin{cases}
+x & \text{if } x \geq 0 \\
+\alpha (e^{x} - 1) & \text{if } x < 0
+\end{cases}
+\end{equation}
+
+Swish, introduced by Google, is defined as:
+
+\begin{equation}
+f(x) = x \cdot \sigma(x)
+\end{equation}
+
+It has shown strong empirical performance in deep learning models.
+
+GELU (Gaussian Error Linear Unit) is widely used in transformer architectures such as BERT and GPT and provides smooth gradient behavior, especially in large-scale models.
+
+\textbf{GELU (approximation):}
+\begin{equation}
+f(x) \approx 0.5x \left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}(x + 0.044715x^3)\right)\right)
+\end{equation}
+
+Mish is a more recent activation function characterized by high smoothness and strong information preservation properties, often improving performance in deep networks.
+\textbf{Mish:}
+\begin{equation}
+f(x) = x \cdot \tanh(\ln(1 + e^{x}))
+\end{equation}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{classic&mod.png}
+    \caption{Visual representation of traditional (left) versus modern (right) activation functions.}
+    \label{fig:meinbild}
+\end{figure}
+
+\subsection{Motivation for New Activation Functions}
+
+Classical activation functions suffer from several well-known issues:
+
+\begin{itemize}
+    \item Vanishing gradients
+    \item Poor gradient flow
+    \item Unstable training behavior
+\end{itemize}
+
+Modern activation functions aim to overcome these limitations by improving:
+
+\begin{itemize}
+    \item Training stability
+    \item Generalization performance
+    \item Convergence speed
+\end{itemize}
+
+
+\subsection{Summary Comparison}
+
+Classical activation functions are simple and computationally efficient but limited in deep architectures. In contrast, modern activation functions are smoother, more stable, and often adaptive or learnable, making them more suitable for deep learning applications.
+
 % EA design and description part
 \newpage
 \section{Design of Evolutional Algorithm}
@@ -190,7 +314,20 @@ Second presentation: assignment of responsibilities, organization.
 
 \end{itemize}
 
+
 % real scientific references
 \bibliography{}		% .bib files here
+
+\section{References}
+
+\begin{itemize}
+    \item Goodfellow et al. (2016): \textit{Deep Learning}
+    \item Nair \& Hinton (2010): ReLU
+    \item Maas et al. (2013): Leaky ReLU
+    \item Clevert et al. (2015): ELU
+    \item Ramachandran et al. (2017): Swish
+    \item Hendrycks \& Gimpel (2016): GELU
+    \item  Mish Activation Function (2019): Misra 
+\end{itemize}
 
 \end{document}
