@@ -104,10 +104,24 @@ good target for optimization.
 Our group has been assigned the task of performing this optimization in a
 basic artificial neural network by means of a basic evolutionary algorithm.
 Our experiments will be performed on benchmarks and data provided by the
-"basics" group.  (TBA: discussion after we get the data)
+"basics" group.  We use the PyTorch framework for our work.
 
-We are planning to use the PyTorch framework for our work.  (TBA: discussion
-after we implemented it)
+In a genetic algorithm, there is a set of individuals that are then mutated
+and discarded in each iteration.  In this case, an individual is defined as
+the assignment of activation functions in the neural network's hidden layer.
+For simplicity, we assume here that the neural network has one hidden layer,
+but an extension to multiple layers is possible.
+
+First, the initial generation is chosen as a random list of functions.
+Then we perform a training of the resulting network with a fixed number of
+steps.  Of these networks, the one with the best fitness is kept.
+
+Population of the next generation is decided using a semi-random selection
+of two highly fitting individuals and then optionally combining these.
+Finally, the resulting function is randomly mutated.  The experiment may
+be considered successful if, after a number of such generations, the
+resulting activation function distribution performs better than a network
+with a uniform activation function.
 
 \newpage
 
@@ -182,13 +196,13 @@ Therefore, activation functions are essential for both learning capability and o
 
 \subsection{Classical Activation Functions}
 
-One of the earliest and most commonly used activation functions is the sigmoid function. It maps input values into the range $(0, 1)$. However, sigmoid suffers from saturation for large positive or negative inputs, which leads to vanishing gradients and consequently slow learning.
+One of the earliest and most commonly used activation functions is the \textbf{sigmoid} function. It maps input values into the range $(0, 1)$. However, sigmoid suffers from saturation for large positive or negative inputs, which leads to vanishing gradients and consequently slow learning.
 
 \begin{equation}
 \sigma(x) = \frac{1}{1 + e^{-x}}
 \end{equation}
 
-Another classical function is \textit{tanh}, which outputs values in the range $(-1, 1)$. Compared to sigmoid, tanh is generally more effective due to its zero-centered output, but it also suffers from saturation problems.
+Another classical function is \textbf{tanh}, which outputs values in the range $(-1, 1)$. Compared to sigmoid, tanh is generally more effective due to its zero-centered output, but it also suffers from saturation problems.
 \begin{equation}
 \tanh(x) = \frac{e^{x} - e^{-x}}{e^{x} + e^{-x}}
 \end{equation}
@@ -202,7 +216,8 @@ f(x) =
 \end{cases}
 \end{equation}
 
-A major breakthrough was the introduction of the ReLU (Rectified Linear Unit) function:
+A major breakthrough was the introduction of the \textbf{ReLU} (Rectified Linear
+Unit) function:
 
 \begin{equation}
 f(x) = \max(0, x)
@@ -214,8 +229,8 @@ ReLU is computationally efficient and significantly improves training speed and 
 
 To address limitations of classical approaches, several modern activation functions have been proposed.
 
-Leaky ReLU introduces a small negative slope for negative inputs, preventing dead neurons.
-\textbf{Leaky ReLU:}
+\textbf{Leaky ReLU} introduces a small negative slope for negative inputs, preventing dead neurons.
+
 \begin{equation}
 f(x) =
 \begin{cases}
@@ -224,8 +239,9 @@ x & \text{if } x \geq 0 \\
 \end{cases}
 \end{equation}
 
-PReLU extends Leaky ReLU by making the negative slope a learnable parameter.
-\textbf{PReLU:}
+\textbf{PReLU} extends Leaky ReLU by making the negative slope a learnable
+parameter.
+
 \begin{equation}
 f(x) =
 \begin{cases}
@@ -235,8 +251,8 @@ a x & \text{if } x < 0
 \quad \text{where } a \text{ is learnable}
 \end{equation}
 
-ELU (Exponential Linear Unit) provides a smoother transition for negative values and improves training stability.
-\textbf{ELU:}
+\textbf{ELU} (Exponential Linear Unit) provides a smoother transition for negative values and improves training stability.
+
 \begin{equation}
 f(x) =
 \begin{cases}
@@ -245,7 +261,7 @@ x & \text{if } x \geq 0 \\
 \end{cases}
 \end{equation}
 
-Swish, introduced by Google, is defined as:
+\textbf{Swish}, introduced by Google, is defined as:
 
 \begin{equation}
 f(x) = x \cdot \sigma(x)
@@ -253,15 +269,17 @@ f(x) = x \cdot \sigma(x)
 
 It has shown strong empirical performance in deep learning models.
 
-GELU (Gaussian Error Linear Unit) is widely used in transformer architectures such as BERT and GPT and provides smooth gradient behavior, especially in large-scale models.
+\textbf{GELU} (Gaussian Error Linear Unit) is widely used in transformer
+architectures such as BERT and GPT and provides smooth gradient behavior,
+especially in large-scale models.  Following is an approximation of the
+function:
 
-\textbf{GELU (approximation):}
 \begin{equation}
 f(x) \approx 0.5x \left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}(x + 0.044715x^3)\right)\right)
 \end{equation}
 
-Mish is a more recent activation function characterized by high smoothness and strong information preservation properties, often improving performance in deep networks.
-\textbf{Mish:}
+\textbf{Mish} is a more recent activation function characterized by high smoothness and strong information preservation properties, often improving performance in deep networks.
+
 \begin{equation}
 f(x) = x \cdot \tanh(\ln(1 + e^{x}))
 \end{equation}
