@@ -5,42 +5,48 @@ As an assumption, we consider a neural network with one or more hidden layers.
 Let \(v=\{v_1, v_2, \dots, v_n\} \) be a raw output of the hidden layer and 
 \(f = \{f_1, f_2, \dots, f_n\}\) be the activation functions applied to each neuron in the hidden layer, respectively,
 where \(f_i \in \mathcal{F}\) for \(i=1,\dots,n\) and \(\mathcal{F}\) is the set of activation functions (we call \(\mathcal{F}\) the ``function pool'').
+Let \(\{B_0, \dots, B_m\}\) be the set of mini-batches, i.e., $m$ partitions of the full training dataset $B$.
+\subsection{Fitness Evaluation}
+Fitness is evaluated without any gradient update: the network weights $W$ are held fixed, and the error on the current mini-batch $B_b$ is measured.
+All individuals in a given generation are evaluated on the same mini-batch, so fitness differences reflect only the activation function distribution.
+The network weights $W$ are initialized once at the start and are only updated when the best individual of a generation improves upon the current champion $C$, in which case one mini-batch training step is performed using $B_b$.
+After each generation, the mini-batch index advances ($b \leftarrow b+1$); once all mini-batches are exhausted, the training set is shuffled and $b$ is reset to $0$.
 \subsection{Algorithm}
 We use a simple genetic algorithm for the optimization.
-For the sake of simplicity, the algorithm assumes a single hidden layer for a neural network. For a neural network with $N>1$ layers, we use either concatenated activation function layers as an individual, or another method that fits better.
 
 \begin{algorithm}[H]
 \caption{Optimization of Activation Function Distribution}
 \label{alg:optimization}
 \begin{algorithmic}[1]
-\REQUIRE Population $P$ of size $M$, function pool $\mathcal{F} = \{f_1, \dots, f_n\}$, max generations $g$
+\REQUIRE Population $P$ of size $M$, function pool $\mathcal{F} = \{f_1, \dots, f_n\}$, max generations $g$, mini-batches $\{B_0, \dots, B_m\}$
 \STATE Initialize $P^0$ with random functions from $\mathcal{F}$ for each individual $i \in \{1,\dots,M\}$
-\STATE Initialize $f_{best}$
-\STATE 
+\STATE Initialize network weights $W$ randomly; set mini-batch index $b \leftarrow 0$
+\STATE Evaluate all individuals in $P^0$ on $B_0$ (no training, $W$ fixed)
+\STATE Set champion $C \leftarrow \arg\max_{f \in P^0} fitness(f)$
 \FOR{$t = 0$ to $g$}
     \FOR{$i = 1$ to $M$}
-        \STATE Evaluate fitness of $P^t_i$ by training NN with $P^t_i$
-        \IF{$fitness(P^t_i) > fitness(f_{best})$}
-            \STATE $f_{best} = P^t_i$
-        \ENDIF
+        \STATE Evaluate fitness of $P^t_i$ on $B_b$ with $W$ fixed (no training)
     \ENDFOR
     \STATE Select new population $P^{t+1}$ from $P^t$ using selection operator
     \STATE Mutate $P^{t+1}$ using mutation operator
+    \IF{$fitness(\arg\max_{f \in P^{t+1}} fitness(f)) > fitness(C)$}
+        \STATE $C \leftarrow \arg\max_{f \in P^{t+1}} fitness(f)$
+        \STATE Train $W$ for one step on $B_b$
+    \ENDIF
+    \STATE $b \leftarrow b + 1$; if $b > m$, shuffle training set and $b \leftarrow 0$
 \ENDFOR
-\RETURN $f_{best}$
+\RETURN $C$
 \end{algorithmic}
 \end{algorithm}
 \subsection{Proposal of Operators}
 \subsubsection{Selection}
-For the selection of individuals from the current generation $P^t$ to the next generation $P^{t+1}$, we use a combination of elitism and tournament selection. We initially set $k=2$, meaning the selection process involves 4 randomly selected individuals from $P^t$.
+For the selection of individuals from the current generation $P^t$ to the next generation $P^{t+1}$, we use tournament selection. We initially set $k=2$, meaning each tournament involves 2 randomly selected individuals from $P^t$.
 \begin{algorithm}[H]
 \caption{Selection($k$)}
 \label{alg:selection}
 \begin{algorithmic}[1]
-\STATE Select $f_{best}\in P^t$
-\STATE Add $f_{best}$ to $P^{t+1}$ 
 \WHILE{$P^{t+1}$ is not full}
-\STATE Select $k$ individuals from $P^t$ uniformly at random 
+\STATE Select $k$ individuals from $P^t$ uniformly at random
 \STATE Set the best fitting individual as $f_A$
 \STATE Select $k$ individuals from $P^t$ uniformly at random again
 \STATE Set the best fitting individual as $f_B$
@@ -53,7 +59,7 @@ For the selection of individuals from the current generation $P^t$ to the next g
 \end{algorithmic}
 \end{algorithm}
 \subsubsection{Crossover}
-We use uniform crossover. The algorithm takes two parents as input and returns one child. 
+We use uniform crossover. The algorithm takes two parents as input and returns one child.
 The probability of crossover is initially set to $0.8$. Although this probability may be varied in experiments, it will remain high.
 \begin{algorithm}[H]
 \caption{Crossover($f_A, f_B$)}
