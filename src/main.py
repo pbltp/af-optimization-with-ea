@@ -266,7 +266,6 @@ class NeuralNetwork:
         activations, pre_activations = self.forward(features)
         predictions = activations[-1]
 
-        #print("len", len(predictions), "batch size", batch_size)
         delta = [
             [predictions[row][0] - labels[row]]
             for row in range(batch_size)
@@ -411,7 +410,7 @@ def select_population(population, batch_features, batch_labels, rng):
         if rng.random() <= CROSSOVER_PROB:
             fc = crossover(fa, fb, rng)
         else:
-            fc = fa.copy() if fa_best > fb_best else fb.copy()
+            fc = fa.copy() if fa_best < fb_best else fb.copy()
         res.append(fc)
     return res
 
