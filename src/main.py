@@ -22,20 +22,20 @@ ACTIVATIONS = ["ReLU", "GeLU", "Sigmoid", "TanH", "Swish", "Identity"]
 
 PROBLEMS = {
     "Easy": {
-        "train": ROOT / "problems/easy/two_moons_train.csv",
-        "test": ROOT / "problems/easy/two_moons_test.csv",
+        "train": ROOT / "../problems/easy/two_moons_train.csv",
+        "test": ROOT / "../problems/easy/two_moons_test.csv",
         "hidden_layers": [8],
         "epochs": 100,
     },
     "Medium": {
-        "train": ROOT / "problems/medium/concentric_circles_train.csv",
-        "test": ROOT / "problems/medium/concentric_circles_test.csv",
+        "train": ROOT / "../problems/medium/concentric_circles_train.csv",
+        "test": ROOT / "../problems/medium/concentric_circles_test.csv",
         "hidden_layers": [8, 8],
         "epochs": 150,
     },
     "Hard": {
-        "train": ROOT / "problems/hard/crossing_spirals_train.csv",
-        "test": ROOT / "problems/hard/crossing_spirals_test.csv",
+        "train": ROOT / "../problems/hard/crossing_spirals_train.csv",
+        "test": ROOT / "../problems/hard/crossing_spirals_test.csv",
         "hidden_layers": [16, 16],
         "epochs": 250,
     },
@@ -493,7 +493,7 @@ def main():
     for problem_name, problem_config in PROBLEMS.items():
         train_population(problem_name, problem_config, rows)
 
-    output_path = ROOT / "results/evo_results.csv"
+    output_path = ROOT / "../results/evo_results.csv"
     write_results(output_path, rows)
     print(f"Results written to {output_path.relative_to(ROOT)}")
 
