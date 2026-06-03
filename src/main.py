@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # Based on Basic Group's work
+#
+# TODO:
+# * remove the million matrix copies
+# * translate to PyTorch
+# * fix weights for networks independently of activation functions
 
 import csv
 import math
