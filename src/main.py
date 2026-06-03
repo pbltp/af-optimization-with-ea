@@ -16,7 +16,6 @@ POPULATION_SIZE = 8
 TOURNAMENT_SIZE = 2
 CROSSOVER_PROB = 0.8
 MUTATION_PROB = 0.01
-MUTATION_SELECTION = 0.2
 
 ACTIVATIONS = ["ReLU", "GeLU", "Sigmoid", "TanH", "Swish", "Identity"]
 
@@ -97,16 +96,6 @@ def swish(x):
 def identity(x):
     return x
 
-ActivationFunMap = {
-    "ReLU": relu,
-    "GeLU": gelu,
-    "Sigmoid": sigmoid,
-    "TanH": math.tanh,
-    "Swish": swish,
-    "Identity": identity
-}
-
-
 def relu_derived(x):
     return 1.0 if x > 0 else 0.0
 
@@ -130,17 +119,13 @@ def swish_derived(x):
 def identity_derived(x):
     return 1.0
 
-ActivationDerivativeMap = {
-    "ReLU": relu_derived,
-    "GeLU": gelu_derived,
-    "Sigmoid": sigmoid_derived,
-    "TanH": tanh_derived,
-    "Swish": swish_derived,
-    "Identity": identity_derived
-}
-
 ActivationList = [
-    "ReLU", "GeLU", "Sigmoid", "TanH", "Swish", "Identity"
+    [relu, relu_derived],
+    [gelu, gelu_derived],
+    [sigmoid, sigmoid_derived],
+    [math.tanh, tanh_derived],
+    [swish, swish_derived],
+    [identity, identity_derived],
 ]
 
 def matmul_add_bias(matrix, weights, bias):
@@ -181,9 +166,8 @@ def matmul(left, right):
 def zeros_like(matrix):
     return [[0.0 for _ in row] for row in matrix]
 
-
-def get_activation_funs(x):
-    return [ActivationFunMap[x], ActivationDerivativeMap[x]]
+def generate_activation_funs(rng):
+    return rng.choice(ActivationList)
 
 class NeuralNetwork:
     def __init__(self, layer_sizes, rng, noinit = False):
@@ -201,7 +185,7 @@ class NeuralNetwork:
             ]
             layer_biases = [0.0 for _ in range(fan_out)]
             layer_activation = [
-                get_activation_funs(rng.choice(ActivationList)) for _ in range(fan_out)
+                generate_activation_funs(rng) for _ in range(fan_out)
             ]
             self.weights.append(layer_weights)
             self.biases.append(layer_biases)
@@ -416,10 +400,11 @@ def select_population(population, batch_features, batch_labels, rng):
 
 def mutate_population(population, rng):
     for model in population:
-        if rng.random() <= MUTATION_PROB:
-            for layer in model.activation_funs:
-                for i in rng.choices(range(len(layer)), k = math.floor(len(layer) * MUTATION_SELECTION)):
-                    layer[i] = get_activation_funs(rng.choice(ActivationList))
+        for layer in model.activation_funs:
+            # XXX we could do sampling more efficiently
+            for i in range(len(layer)):
+                if rng.random() <= MUTATION_PROB:
+                    layer[i] = generate_activation_funs(rng)
 
 def train_population(problem_name, problem_config, rows):
     feature_names, train_features, train_labels = load_dataset(problem_config["train"])
