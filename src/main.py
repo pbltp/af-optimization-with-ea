@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
 # Based on Basic Group's work
 # TODO:
-# * training accuracy is lower than test accuracy, which is suspicious
-# * we still have separate weights, I suppose it is better to have just one?
-#   and then just train using the champion (or one at random)
-# * save the final distribution of functions too (in a separate file? or as JSON)
-# * at the end, retrain best network from scratch
-# * maybe try optimizing last layer too (but then we have to add a layer to clamp
-#   to 0-1 at the end)
-# * check if using delta of loss as fitness is better than just regular loss
+# * maybe try optimizing last layer too? (but then we have to add a layer
+#   to clamp to 0-1 at the end)
 
 import csv
 import math
@@ -21,15 +15,21 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
+
+# Same as basics group.
 RANDOM_SEED = 42
 LEARNING_RATE = 0.01
 BATCH_SIZE = 32
-MOMENTUM = 0.1
+MOMENTUM = 0
 
-POPULATION_SIZE = 8
+# Note: a greater population size indicates that the network is trained
+# more often on the same batch.
+POPULATION_SIZE = 100
 TOURNAMENT_SIZE = 2
 CROSSOVER_PROB = 0.8
-MUTATION_PROB = 0.01
+
+# Same as basics group.
+MUTATION_PROB = 0
 
 
 PROBLEMS = {
@@ -127,47 +127,71 @@ ActivationList = [
     identity,           # identity
 ]
 
+class CustomAFList():
+    def __init__(self, layer_sizes, rng, funs = None):
+        """
+        Initialize a custom AF list with random functions.
+
+        @params:
+            fan_out: list of output neurons.
+            rng: random.Random a random number generator.
+        """
+
+        self.current_loss = 0
+        if funs != None:
+            self.funs = funs
+        else:
+            self.funs = []
+
+            for i in range(len(layer_sizes) - 2):
+                fan_out = layer_sizes[i + 1]
+                layer_funs = [rng.choice(ActivationList) for _ in range(fan_out)]
+                self.funs.append(layer_funs)
+
+    def copy(self):
+        return CustomAFList(None, None, self.funs)
+
 class CustomAFNeuralNetwork(nn.Module):
     def __init__(self, layer_sizes, rng):
         """
-        Initialize a NN with per-neuron custom activation functions.
+        Initialize a NN with layers that accept per-neuron custom activation
+        functions.
 
         @params:
-            input_size: int, number of input features.
             layer_sizes: list[int] representing the size of each layer.
         """
         super(CustomAFNeuralNetwork, self).__init__()
-        self.layers = []
         self.nets = None
-        self.running_loss = 0
-        self.prev_loss = 0
-        self.loss_delta = 0
-        self.last_loss = 0
-        self.activation_funs = []
         self.loss_fn = nn.BCELoss()
+        self.af_layers = []
+        self.af_list = None
+
+        layers = []
 
         for i in range(len(layer_sizes) - 2):
             fan_in = layer_sizes[i]
             fan_out = layer_sizes[i + 1]
-            self.layers.append(nn.Linear(fan_in, fan_out))
+            layers.append(nn.Linear(fan_in, fan_out))
             layer_funs = [rng.choice(ActivationList) for _ in range(fan_out)]
-            self.activation_funs.append(layer_funs)
-            self.layers.append(CustomAFLayer(layer_funs))
+            af_layer = CustomAFLayer()
+            layers.append(af_layer)
+            self.af_layers.append(af_layer)
 
-        # Final layer: we must use sigmoid, otherwise BCE doesn't really work.
-        # (We could try the others + clamp, but I'm not sure if it's worth
-        # the trouble.)
-        self.layers.append(nn.Linear(layer_sizes[-2], 1))
-        self.layers.append(nn.Sigmoid())
+        # Final layer: we must use sigmoid, otherwise binary cross entropy
+        # doesn't work.  (We could try the others + clamp, I suppose.)
+        layers.append(nn.Linear(layer_sizes[-2], 1))
+        layers.append(nn.Sigmoid())
 
-        self.nets = nn.Sequential(*self.layers)
+        self.nets = nn.Sequential(*layers)
         self.optimizer = torch.optim.SGD(self.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM)
 
     def forward(self, x):
         return self.nets(x)
 
-    def copy_funs(self):
-        return copy.deepcopy(self.activation_funs)
+    def set_af_list(self, af_list):
+        self.af_list = af_list
+        for i, layer in enumerate(af_list.funs):
+            self.af_layers[i].af_conf = layer
 
 class CustomAFLayer(nn.Module):
     """
@@ -175,9 +199,9 @@ class CustomAFLayer(nn.Module):
     Supports batched input of shape (batch_size, n_neurons).
     """
 
-    def __init__(self, af_conf):
+    def __init__(self):
         super().__init__()
-        self.af_conf = af_conf
+        self.af_conf = None
 
     def forward(self, x):
         af = torch.empty_like(x)
@@ -191,51 +215,61 @@ class CustomAFLayer(nn.Module):
 
 def crossover(fa, fb, rng):
     res = []
-    for layer in range(len(fa.activation_funs)):
+    for layer in range(len(fa.funs)):
         layer_activation = [
             a if rng.random() <= .5 else b for a, b in zip(
-                fa.activation_funs[layer], fb.activation_funs[layer]
+                fa.funs[layer], fb.funs[layer]
             )
         ]
         res.append(layer_activation)
-    return res
+    return CustomAFList(None, None, res)
 
-def tournament(population, batch_inputs, batch_labels, rng):
+def take_best(fa, fb):
+    return fa if fa.current_loss < fb.current_loss else fb
+
+def tournament(model, population, inputs, labels, rng):
     fa = None
-    for model in rng.choices(population, k = TOURNAMENT_SIZE):
-        # XXX I'm not sure if delta is better than just regular loss
-        if fa == None or model.loss_delta < fa.loss_delta:
-            fa = model
+    for af_list in rng.choices(population, k = TOURNAMENT_SIZE):
+        model.set_af_list(af_list)
+        outputs = model(inputs)
+        af_list.current_loss = model.loss_fn(outputs, labels).item()
+        if fa == None or af_list.current_loss < fa.current_loss:
+            fa = af_list
     return fa
 
-def select_population(population, batch_inputs, batch_labels, rng):
+def select_population(model, population, inputs, labels, rng):
     res = []
-    for i in range(POPULATION_SIZE):
-        fa = tournament(population, batch_inputs, batch_labels, rng)
-        fb = tournament(population, batch_inputs, batch_labels, rng)
-        fc = None
-        if rng.random() <= CROSSOVER_PROB:
-            fc = crossover(fa, fb, rng)
-        else:
-            fc = fa.copy_funs() if fa.loss_delta < fb.loss_delta else fb.copy_funs()
-        res.append(fc)
-    # Redistribute new functions randomly.
-    # Note: this is a bit ugly, we're basically modifying the lists the
-    # layer objects point to.
-    for funs, model in zip(res, rng.sample(population, len(population))):
-        for i, layer_funs in enumerate(funs):
-            for j, fun in enumerate(layer_funs):
-                model.activation_funs[i][j] = fun
+    model.eval()
+    with torch.no_grad():
+        for i in range(POPULATION_SIZE):
+            fa = tournament(model, population, inputs, labels, rng)
+            fb = tournament(model, population, inputs, labels, rng)
+            fc = None
+            if rng.random() <= CROSSOVER_PROB:
+                fc = crossover(fa, fb, rng)
+            else:
+                fc = take_best(fa, fb)
+            res.append(fc)
+    return res
 
 def mutate_population(population, rng):
-    for model in population:
-        for layer in model.activation_funs:
-            # XXX we could do sampling more efficiently
+    for af_list in population:
+        for layer in af_list.funs:
             for i in range(len(layer)):
                 if rng.random() <= MUTATION_PROB:
                     layer[i] = rng.choice(ActivationList)
 
-def evaluate(model, loader):
+def train_model(model, af_list, inputs, labels):
+    model.train()
+    model.optimizer.zero_grad()
+    model.set_af_list(af_list)
+    outputs = model(inputs)
+    loss = model.loss_fn(outputs, labels)
+    loss.backward()
+    model.optimizer.step() # adjust weights
+    af_list.current_loss = loss.item()
+
+def evaluate(model, af_list, loader):
     with torch.no_grad():
         size = len(loader.dataset)
         num_batches = len(loader)
@@ -263,61 +297,51 @@ def train_population(problem_name, problem_config, rows):
     rng = random.Random(RANDOM_SEED)
 
     for i in range(POPULATION_SIZE):
-        model = CustomAFNeuralNetwork(layer_sizes, rng)
-        model.train()
-        population.append(model)
+        population.append(CustomAFList(layer_sizes, rng))
 
+    print(problem_name + ": run evolution")
+    model = CustomAFNeuralNetwork(layer_sizes, rng)
+    num_train = 0
+    num_batch = 0
     for num_epoch in range(problem_config["epochs"]):
-        # Reset loss for this epoch
-        for model in population:
-            model.running_loss = 0
-
         for inputs, labels in training_loader:
+            if num_batch < num_train:
+                # Ensure that the model is trained for as much batches
+                # during evolution as during retraining.
+                # (Another way would be to divide epochs by population, but
+                # this seems more accurate.)
+                num_batch += 1
+                continue
+
             # Evolutionary algorithm
-            select_population(population, inputs, labels, rng)
+            population = select_population(model, population, inputs, labels, rng)
             mutate_population(population, rng)
 
-            # XXX champion only?
-            for model in population:
-                model.optimizer.zero_grad()
-                outputs = model(inputs)
-                loss = model.loss_fn(outputs, labels)
-                loss.backward()
-                # loss - model.prev_loss: negative if previous loss was
-                # greater, positive otherwise (smallest wins)
-                model.loss_delta = loss - model.prev_loss
-                model.prev_loss = loss
-                model.optimizer.step() # adjust weights
-                model.running_loss += loss.item() # add loss
+            for af_list in population:
+                train_model(model, af_list, inputs, labels)
+                num_train += 1
+            num_batch += 1
 
-        print("epoch", num_epoch)
-        for i, model in enumerate(population):
-            model.last_loss = model.running_loss / BATCH_SIZE # loss per batch
-            print("model", i, "loss:", model.last_loss)
+        if num_epoch % 10 == 9:
+            print("\rEvolution epoch", num_epoch, end='', flush=True)
+    print("")
+    print("Trained for", num_train, "batches")
 
     best_loss = math.inf
-    best_model = None
-    best_accuracy = 0
+    best_af_list = None
     best_i = -1
 
-    for i, model in enumerate(population):
-        loss, accuracy = evaluate(model, test_loader)
-
-        # XXX output all models sorted instead?
-        if loss < best_loss or best_model == None:
-            best_model = model
+    for i, af_list in enumerate(population):
+        loss, accuracy = evaluate(model, af_list, test_loader)
+        if loss < best_loss or best_af_list == None:
+            best_af_list = af_list
             best_loss = loss
-            best_accuracy = accuracy
             best_i = i
+    af_list = best_af_list
 
-    test_loss, test_accuracy = best_loss, best_accuracy
-    train_loss, train_accuracy = evaluate(model, training_loader)
+    test_loss, test_accuracy = evaluate(model, af_list, test_loader)
+    train_loss, train_accuracy = evaluate(model, af_list, training_loader)
 
-    print(f"{problem_name}: individual #{best_i} train {train_accuracy} test {test_accuracy} train loss {train_loss} train loss really? {population[best_i].last_loss} test loss {test_loss}")
-
-    print("\n".join(
-        ", ".join(fun.__name__ for fun in funs) for funs in model.activation_funs)
-    )
     rows.append({
         "problem": problem_name,
         "topology": "-".join(str(size) for size in layer_sizes),
@@ -326,6 +350,47 @@ def train_population(problem_name, problem_config, rows):
         "test_loss": test_loss,
         "train_accuracy": train_accuracy,
         "test_accuracy": test_accuracy,
+        "functions": "evolution result (functions not fixed)"
+    })
+
+    # Redo training from scratch with the final activation function list.
+    # This is to ensure that the benchmark is comparable to the basic case.
+    model = CustomAFNeuralNetwork(layer_sizes, rng)
+
+    num_train = 0
+    for num_epoch in range(problem_config["epochs"]):
+        running_loss = 0
+        for inputs, labels in training_loader:
+            # Evolutionary algorithm
+            train_model(model, af_list, inputs, labels)
+            running_loss += af_list.current_loss # add loss
+            num_train += 1
+        last_loss = running_loss / BATCH_SIZE # loss per batch
+        if num_epoch % 10 == 9:
+            print("\rRetrain epoch", num_epoch, "loss:", last_loss, end='', flush=True)
+    print("")
+    print("Trained for", num_train, "batches")
+
+    test_loss, test_accuracy = evaluate(model, af_list, test_loader)
+    train_loss, train_accuracy = evaluate(model, af_list, training_loader)
+
+    print(f"{problem_name}: individual #{best_i} train {train_accuracy} test {test_accuracy} train loss {train_loss} test loss {test_loss}")
+
+    functions = "|".join(
+        ":".join(fun.__name__ for fun in funs) for funs in best_af_list.funs
+    )
+
+    print(functions)
+
+    rows.append({
+        "problem": problem_name,
+        "topology": "-".join(str(size) for size in layer_sizes),
+        "epochs": problem_config["epochs"],
+        "train_loss": train_loss,
+        "test_loss": test_loss,
+        "train_accuracy": train_accuracy,
+        "test_accuracy": test_accuracy,
+        "functions": functions
     })
 
 def main():
@@ -346,6 +411,7 @@ def main():
         "test_loss",
         "train_accuracy",
         "test_accuracy",
+        "functions",
     ]
 
     with output_path.open("w", newline="") as csv_file:
