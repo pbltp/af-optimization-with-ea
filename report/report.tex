@@ -109,12 +109,12 @@ Our experiments will be performed on benchmarks and data provided by the
 In a genetic algorithm, there is a set of individuals that are then mutated
 and discarded in each iteration.  In this case, an individual is defined as
 the assignment of activation functions in the neural network's hidden layer.
-For simplicity, we assume here that the neural network has one hidden layer,
-but an extension to multiple layers is possible.
 
-First, the initial generation is chosen as a random list of functions.
-Then we perform a training of the resulting network with a fixed number of
-steps.  Of these networks, the one with the best fitness is kept.
+First, the initial generation is chosen as a random list of activation
+function vectors from a fixed set of activation functions.  Then, for each
+generation, training on a single set of weights $W$ is performed using each
+individual of the population.  The weights are kept in the next generation,
+with only the population being changed.
 
 Population of the next generation is decided using a semi-random selection
 of two highly fitting individuals and then optionally combining these.

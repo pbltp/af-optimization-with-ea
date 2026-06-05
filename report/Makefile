@@ -1,2 +1,2 @@
-report.pdf: report.tex
+report.pdf: report.tex algorithm.tex
 	pdflatex report.tex

@@ -9,7 +9,7 @@ Let \(\{B_0, \dots, B_m\}\) be the set of mini-batches, i.e., $m$ partitions of 
 \subsection{Fitness Evaluation}
 Fitness is evaluated without any gradient update: the network weights $W$ are held fixed, and the error on the current mini-batch $B_b$ is measured.
 All individuals in a given generation are evaluated on the same mini-batch, so fitness differences reflect only the activation function distribution.
-The network weights $W$ are initialized once at the start and are only updated when the best individual of a generation improves upon the current champion $C$, in which case one mini-batch training step is performed using $B_b$.
+The network weights $W$ are initialized once at the start and are updated for every generation using one mini-batch training step on $B_b$.
 After each generation, the mini-batch index advances ($b \leftarrow b+1$); once all mini-batches are exhausted, the training set is shuffled and $b$ is reset to $0$.
 \subsection{Algorithm}
 We use a simple genetic algorithm for the optimization.
@@ -22,22 +22,30 @@ We use a simple genetic algorithm for the optimization.
 \STATE Initialize $P^0$ with random functions from $\mathcal{F}$ for each individual $i \in \{1,\dots,M\}$
 \STATE Initialize network weights $W$ randomly; set mini-batch index $b \leftarrow 0$
 \STATE Evaluate all individuals in $P^0$ on $B_0$ (no training, $W$ fixed)
-\STATE Set champion $C \leftarrow \arg\max_{f \in P^0} fitness(f)$
 \FOR{$t = 0$ to $g$}
     \FOR{$i = 1$ to $M$}
         \STATE Evaluate fitness of $P^t_i$ on $B_b$ with $W$ fixed (no training)
     \ENDFOR
     \STATE Select new population $P^{t+1}$ from $P^t$ using selection operator
     \STATE Mutate $P^{t+1}$ using mutation operator
-    \IF{$fitness(\arg\max_{f \in P^{t+1}} fitness(f)) > fitness(C)$}
-        \STATE $C \leftarrow \arg\max_{f \in P^{t+1}} fitness(f)$
-        \STATE Train $W$ for one step on $B_b$
-    \ENDIF
+    \FOR{$i = 1$ to $M$}
+        \STATE Train $W$ for one step on $B_b$ with activation functions $P^{t+1}_i$
+    \ENDFOR
     \STATE $b \leftarrow b + 1$; if $b > m$, shuffle training set and $b \leftarrow 0$
 \ENDFOR
+\STATE Set champion $C \leftarrow \arg\max_{f \in P^t} fitness(f)$
 \RETURN $C$
 \end{algorithmic}
 \end{algorithm}
+
+\subsection{Retraining}
+
+After the algorithm finishes, the champion $C$ is trained again on a new
+set of random weights $W_2$ for the same amount of batches.  This allows
+measuring the effectiveness of training on a variable set of activation
+functions ($W$) versus a single set of optimized activation functions
+($W_2$).
+
 \subsection{Proposal of Operators}
 \subsubsection{Selection}
 For the selection of individuals from the current generation $P^t$ to the next generation $P^{t+1}$, we use tournament selection. We initially set $k=2$, meaning each tournament involves 2 randomly selected individuals from $P^t$.
@@ -75,14 +83,13 @@ The probability of crossover is initially set to $0.8$. Although this probabilit
 \end{algorithm}
 \subsubsection{Mutation}
 Mutation is implemented in the form of randomly drawing functions from the function pool to replace selected elements in an individual.
-The probability of mutation is initially set to $0.01$. Although this probability may be varied in experiments, it will remain very low. The number of mutated elements, $l$, is set to approximately 20\% of the length of the individual.
+The probability of mutation $p_m$ is initially set to $0.01$. Although this probability may be varied in experiments, it will remain very low. Mutation is performed for each element in the individual.
 \begin{algorithm}[H]
 \caption{Mutation($f, l$)}
 \label{alg:mutation}
 \begin{algorithmic}[1]
-\STATE Select $l$ elements from $f$ uniformly at random
-\FOR {each selected element $f_i$}
-\STATE Replace $f_i$ with a randomly selected $f_s \in \mathcal{F}\setminus\{f_i\}$
+\FOR {each element $f_i$ in $f$}
+\STATE Replace $f_i$ with a randomly selected $f_s \in \mathcal{F}\setminus\{f_i\}$ with probability $p_m$
 \ENDFOR
 \end{algorithmic}
 \end{algorithm}
