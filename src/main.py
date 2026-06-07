@@ -24,12 +24,12 @@ MOMENTUM = 0
 
 # Note: a greater population size indicates that the network is trained
 # more often on the same batch.
-POPULATION_SIZE = 100
+POPULATION_SIZE = 3200
 TOURNAMENT_SIZE = 2
 CROSSOVER_PROB = 0.8
 
 # Same as basics group.
-MUTATION_PROB = 0
+MUTATION_PROB = 0.01
 
 
 PROBLEMS = {
@@ -53,15 +53,18 @@ PROBLEMS = {
     },
 }
 
+
 class MyDataset(torch.utils.data.Dataset):
     def __init__(self, path):
         with path.open() as csv_file:
             reader = csv.DictReader(csv_file)
-            self.feature_names = [name for name in reader.fieldnames if name != "label"]
+            self.feature_names = [
+                name for name in reader.fieldnames if name != "label"]
             self.features = []
             self.labels = []
             for row in reader:
-                tensor = torch.Tensor([float(row[name]) for name in self.feature_names])
+                tensor = torch.Tensor([float(row[name])
+                                      for name in self.feature_names])
                 self.features.append(tensor)
                 self.labels.append(torch.Tensor([float(row["label"])]))
         feature_count = len(self.features[0])
@@ -72,13 +75,15 @@ class MyDataset(torch.utils.data.Dataset):
         for col in range(feature_count):
             values = [row[col] for row in self.features]
             mean = sum(values) / len(values)
-            variance = sum((value - mean) ** 2 for value in values) / len(values)
+            variance = sum((value - mean) **
+                           2 for value in values) / len(values)
             std = math.sqrt(variance)
             means[col] = mean
             stds[col] = std if std > 0 else 1.0
 
         self.features = [
-            torch.Tensor([(row[col] - means[col]) / stds[col] for col in range(feature_count)])
+            torch.Tensor([(row[col] - means[col]) / stds[col]
+                         for col in range(feature_count)])
             for row in self.features
         ]
 
@@ -88,10 +93,13 @@ class MyDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         return self.features[idx], self.labels[idx]
 
+
 def load_dataset(path):
     dataset = MyDataset(path)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    loader = torch.utils.data.DataLoader(
+        dataset, batch_size=BATCH_SIZE, shuffle=True)
     return loader
+
 
 def standardize(train_features, test_features):
     feature_count = len(train_features[0])
@@ -108,14 +116,17 @@ def standardize(train_features, test_features):
 
     def transform(features):
         return [
-            [(row[col] - means[col]) / stds[col] for col in range(feature_count)]
+            [(row[col] - means[col]) / stds[col]
+             for col in range(feature_count)]
             for row in features
         ]
 
     return transform(train_features), transform(test_features)
 
+
 def identity(x):
     return x
+
 
 # Acceptable activation functions for hidden layers.
 ActivationList = [
@@ -127,8 +138,9 @@ ActivationList = [
     identity,           # identity
 ]
 
+
 class CustomAFList():
-    def __init__(self, layer_sizes, rng, funs = None):
+    def __init__(self, layer_sizes, rng, funs=None):
         """
         Initialize a custom AF list with random functions.
 
@@ -145,11 +157,13 @@ class CustomAFList():
 
             for i in range(len(layer_sizes) - 2):
                 fan_out = layer_sizes[i + 1]
-                layer_funs = [rng.choice(ActivationList) for _ in range(fan_out)]
+                layer_funs = [rng.choice(ActivationList)
+                              for _ in range(fan_out)]
                 self.funs.append(layer_funs)
 
     def copy(self):
         return CustomAFList(None, None, self.funs)
+
 
 class CustomAFNeuralNetwork(nn.Module):
     def __init__(self, layer_sizes, rng):
@@ -183,7 +197,8 @@ class CustomAFNeuralNetwork(nn.Module):
         layers.append(nn.Sigmoid())
 
         self.nets = nn.Sequential(*layers)
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM)
+        self.optimizer = torch.optim.SGD(
+            self.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM)
 
     def forward(self, x):
         return self.nets(x)
@@ -192,6 +207,7 @@ class CustomAFNeuralNetwork(nn.Module):
         self.af_list = af_list
         for i, layer in enumerate(af_list.funs):
             self.af_layers[i].af_conf = layer
+
 
 class CustomAFLayer(nn.Module):
     """
@@ -213,6 +229,7 @@ class CustomAFLayer(nn.Module):
 
         return af
 
+
 def crossover(fa, fb, rng):
     res = []
     for layer in range(len(fa.funs)):
@@ -224,18 +241,21 @@ def crossover(fa, fb, rng):
         res.append(layer_activation)
     return CustomAFList(None, None, res)
 
+
 def take_best(fa, fb):
     return fa if fa.current_loss < fb.current_loss else fb
 
+
 def tournament(model, population, inputs, labels, rng):
     fa = None
-    for af_list in rng.choices(population, k = TOURNAMENT_SIZE):
+    for af_list in rng.choices(population, k=TOURNAMENT_SIZE):
         model.set_af_list(af_list)
         outputs = model(inputs)
         af_list.current_loss = model.loss_fn(outputs, labels).item()
         if fa == None or af_list.current_loss < fa.current_loss:
             fa = af_list
     return fa
+
 
 def select_population(model, population, inputs, labels, rng):
     res = []
@@ -252,12 +272,14 @@ def select_population(model, population, inputs, labels, rng):
             res.append(fc)
     return res
 
+
 def mutate_population(population, rng):
     for af_list in population:
         for layer in af_list.funs:
             for i in range(len(layer)):
                 if rng.random() <= MUTATION_PROB:
                     layer[i] = rng.choice(ActivationList)
+
 
 def train_model(model, af_list, inputs, labels):
     model.train()
@@ -266,8 +288,9 @@ def train_model(model, af_list, inputs, labels):
     outputs = model(inputs)
     loss = model.loss_fn(outputs, labels)
     loss.backward()
-    model.optimizer.step() # adjust weights
+    model.optimizer.step()  # adjust weights
     af_list.current_loss = loss.item()
+
 
 def evaluate(model, af_list, loader):
     with torch.no_grad():
@@ -280,18 +303,20 @@ def evaluate(model, af_list, loader):
         for inputs, labels in loader:
             outputs = model(inputs)
             loss_it = model.loss_fn(outputs, labels).item()
-            outputs = (outputs>0.5).float()
+            outputs = (outputs > 0.5).float()
             accuracy_it = (outputs == labels).float().sum().item()
             loss += loss_it
             accuracy += accuracy_it
 
         return loss / num_batches, accuracy / size
 
+
 def train_population(problem_name, problem_config, rows):
     training_loader = load_dataset(problem_config["train"])
     test_loader = load_dataset(problem_config["test"])
 
-    layer_sizes = [len(training_loader.dataset.feature_names)] + problem_config["hidden_layers"] + [1]
+    layer_sizes = [len(training_loader.dataset.feature_names)
+                   ] + problem_config["hidden_layers"] + [1]
 
     population = []
     rng = random.Random(RANDOM_SEED)
@@ -314,7 +339,8 @@ def train_population(problem_name, problem_config, rows):
                 continue
 
             # Evolutionary algorithm
-            population = select_population(model, population, inputs, labels, rng)
+            population = select_population(
+                model, population, inputs, labels, rng)
             mutate_population(population, rng)
 
             for af_list in population:
@@ -363,11 +389,12 @@ def train_population(problem_name, problem_config, rows):
         for inputs, labels in training_loader:
             # Evolutionary algorithm
             train_model(model, af_list, inputs, labels)
-            running_loss += af_list.current_loss # add loss
+            running_loss += af_list.current_loss  # add loss
             num_train += 1
-        last_loss = running_loss / BATCH_SIZE # loss per batch
+        last_loss = running_loss / BATCH_SIZE  # loss per batch
         if num_epoch % 10 == 9:
-            print("\rRetrain epoch", num_epoch, "loss:", last_loss, end='', flush=True)
+            print("\rRetrain epoch", num_epoch, "loss:",
+                  last_loss, end='', flush=True)
     print("")
     print("Trained for", num_train, "batches")
 
@@ -393,6 +420,7 @@ def train_population(problem_name, problem_config, rows):
         "functions": functions
     })
 
+
 def main():
     rows = []
 
@@ -401,7 +429,7 @@ def main():
 
     torch.manual_seed(RANDOM_SEED)
 
-    output_path = ROOT / "../results/evo_results.csv"
+    output_path = ROOT / "../results/evo_results_3200_m_001.csv"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
         "problem",
@@ -415,7 +443,8 @@ def main():
     ]
 
     with output_path.open("w", newline="") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames, lineterminator="\n")
+        writer = csv.DictWriter(
+            csv_file, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
 
         for row in rows:
