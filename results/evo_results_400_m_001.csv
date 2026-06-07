@@ -1,0 +1,7 @@
+problem,topology,epochs,train_loss,test_loss,train_accuracy,test_accuracy,functions
+Easy,2-8-1,100,0.322315,0.228259,0.848750,0.900000,evolution result (functions not fixed)
+Easy,2-8-1,100,0.302567,0.228139,0.857500,0.920000,identity:relu:silu:relu:gelu:identity:identity:silu
+Medium,2-8-8-1,150,0.190472,0.220522,0.932500,0.870000,evolution result (functions not fixed)
+Medium,2-8-8-1,150,0.067616,0.083786,0.991250,0.985000,gelu:relu:gelu:gelu:silu:gelu:silu:relu|identity:tanh:identity:identity:identity:relu:identity:silu
+Hard,6-16-16-1,250,0.697685,0.699684,0.528750,0.530000,evolution result (functions not fixed)
+Hard,6-16-16-1,250,0.682702,0.698152,0.527500,0.510000,identity:sigmoid:tanh:sigmoid:identity:sigmoid:gelu:gelu:silu:sigmoid:gelu:gelu:silu:gelu:identity:identity|silu:identity:silu:relu:identity:silu:identity:identity:tanh:gelu:silu:relu:silu:gelu:silu:sigmoid
