@@ -309,6 +309,89 @@ Modern activation functions aim to overcome these limitations by improving:
     \item Convergence speed
 \end{itemize}
 
+\newpage
+\section{Experimental Results}
+
+To evaluate the effectiveness of the evolutionary optimization, each benchmark
+(Easy, Medium, and Hard) was executed ten times. Only the final evolved
+activation function distributions were considered for the evaluation. Baseline
+runs marked as \textit{"functions not fixed"} were excluded from the analysis.
+
+\subsection{Average Test Accuracy}
+
+Table1 summarizes the average test accuracy achieved for
+each benchmark.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\hline
+Problem & Number of Runs & Average Test Accuracy \\
+\hline
+Easy   & 10 & 91.40\% \\
+Medium & 10 & 97.45\% \\
+Hard   & 10 & 52.15\% \\
+\hline
+\end{tabular}
+\caption{Average test accuracy over ten evolutionary runs.}
+\label{tab:avg_accuracy}
+\end{table}
+
+The evolutionary search consistently achieved excellent performance on the
+Easy and Medium benchmark problems. In particular, the Medium dataset reached
+an average test accuracy of 97.45\%, indicating that heterogeneous activation
+function assignments can successfully optimize network performance. The Hard
+benchmark remained considerably more challenging, reaching an average accuracy
+of only 52.15\%.
+\newpage
+\subsection{Distribution of Activation Functions}
+
+To better understand which activation functions were preferred by the
+evolutionary algorithm, all activation assignments from the ten optimized runs
+were aggregated.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrrrr}
+\hline
+Problem & Identity & ReLU & GELU & Tanh & SiLU & Sigmoid & Total \\
+\hline
+Easy   & 36 & 12 & 8 & 9 & 8 & 7 & 80 \\
+Medium & 40 & 26 & 46 & 25 & 8 & 15 & 160 \\
+Hard   & 44 & 52 & 75 & 51 & 51 & 47 & 320 \\
+\hline
+\end{tabular}
+\caption{Absolute frequency of evolved activation functions.}
+\label{tab:function_counts}
+\end{table}
+
+Since the network architectures contain different numbers of hidden neurons,
+the relative frequency of each activation function provides a more meaningful
+comparison.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrrr}
+\hline
+Problem & Identity & ReLU & GELU & Tanh & SiLU & Sigmoid \\
+\hline
+Easy   & 45.00\% & 15.00\% & 10.00\% & 11.25\% & 10.00\% & 8.75\% \\
+Medium & 25.00\% & 16.25\% & 28.75\% & 15.63\% & 5.00\% & 9.38\% \\
+Hard   & 13.75\% & 16.25\% & 23.44\% & 15.94\% & 15.94\% & 14.69\% \\
+\hline
+\end{tabular}
+\caption{Relative distribution of evolved activation functions.}
+\label{tab:function_percentages}
+\end{table}
+
+The Easy benchmark strongly favored the Identity activation function, which
+accounted for 45\% of all selected activations. In contrast, the Medium and
+Hard benchmarks exhibited a clear preference for GELU, representing 28.75\%
+and 23.44\% of all evolved activation functions, respectively. While the Hard
+benchmark still preferred GELU, the remaining activation functions were
+distributed much more evenly, suggesting that more difficult problems benefit
+from a heterogeneous mixture of activation functions rather than relying on a
+single dominant choice.
 
 \subsection{Summary Comparison}
 

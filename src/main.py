@@ -24,7 +24,7 @@ MOMENTUM = 0
 
 # Note: a greater population size indicates that the network is trained
 # more often on the same batch.
-POPULATION_SIZE = 3200
+POPULATION_SIZE = 100
 TOURNAMENT_SIZE = 2
 CROSSOVER_PROB = 0.8
 
@@ -429,7 +429,7 @@ def main():
 
     torch.manual_seed(RANDOM_SEED)
 
-    output_path = ROOT / "../results/evo_results_3200_m_001.csv"
+    output_path = ROOT / "../results/evo_results_100_m_10.csv"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
         "problem",
