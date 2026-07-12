@@ -90,8 +90,9 @@ Correspondence to: \\
 \setcounter{page}{1}
 
 \abstract{This is a report for the Natural Computation class of Prof. Mayer
-in 2026, discussing optimization of activation function distribution using
-evolutionary algorithms in an artificial neural network.}
+in 2026, presenting the results of optimizing activation function
+distribution in an artificial neural network using an evolutionary
+algorithm.}
 
 \section{Introduction}
 
@@ -103,18 +104,18 @@ good target for optimization.
 
 Our group has been assigned the task of performing this optimization in a
 basic artificial neural network by means of a basic evolutionary algorithm.
-Our experiments will be performed on benchmarks and data provided by the
-"basics" group.  We use the PyTorch framework for our work.
+We have performed experiments on benchmarks and data provided by the
+"basics" group. XXX cite
 
 In a genetic algorithm, there is a set of individuals that are then mutated
 and discarded in each iteration.  In this case, an individual is defined as
 the assignment of activation functions in the neural network's hidden layer.
 
-First, the initial generation is chosen as a random list of activation
-function vectors from a fixed set of activation functions.  Then, for each
-generation, training on a single set of weights $W$ is performed using each
-individual of the population.  The weights are kept in the next generation,
-with only the population being changed.
+Our approach is as follows.  First, the initial generation is chosen as a
+random list of activation function vectors from a fixed set of activation
+functions.  Then, for each generation, training on a single set of weights
+$W$ is performed using each individual of the population.  The weights are
+kept in the next generation, with only the population being changed.
 
 Population of the next generation is decided using a semi-random selection
 of two highly fitting individuals and then optionally combining these.
@@ -124,75 +125,14 @@ resulting activation function distribution performs better than a network
 with a uniform activation function.
 
 \newpage
-
-\section{Milestones} % NOT in final paper
-\begin{itemize}
-\item{Familiarize ourselves with topic. Until: 25.03.2026}
-\item{Experiment with assigning individual activation functions per neuron
-and modifying this assignment, based on experimential data of the basics
-group.  Until: 06.05.2026}
-\item{Experiment with using an evolutionary algorithm to adjust the
-activation functions. Until: 20.05.2026}
-\item{Create a framework for evaluation of evolutionary algorithms in this
-context.  Until: 03.06.2026}
-\item{Experiment with different evolutionary algorithms. Until: 17.06.2026}
-\item{Finalize report. Until: TBA}
-\end{itemize}
-
-\newpage
-
-\section{Progress of Work} % NOT in final paper
-
-\subsection{Week 1, Wednesday, 04.03.2026}
-
-Lecture introduction.
-
-\subsection{Week 2, Wednesday, 11.03.2026}
-
-Proseminar introduction.
-
-\subsection{Week 3, Wednesday, 25.03.2026}
-
-First presentation: introduction to the topic.  (By Khalil)
-
-\subsection{Week 4, Wednesday, 22.04.2026}
-
-Second presentation: assignment of responsibilities, organization.
-
-\subsection{Week 5, Wednesday, 06.05.2026}
-Third presentation: Activation Functions (By Khalil)
-
-\subsection{Week 6, Wednesday, 20.05.2026}
-
-\subsection{Week 7, Wednesday, 03.06.2026}
-
-\subsection{Week 8, Wednesday, 17.06.2026}
-
-\subsection{Week 9, Wednesday, 24.06.2026}
-
-(?)
-
-\newpage
-
-\section{Subproject Responsibilities} % NOT in final paper
-
-\begin{itemize}
-\item Research prior art/references: Khalil Ibrahim
-\item Research possible (modern) activation functions: Khalil Ibrahim
-\item Implement assignment of AFs to individual neurons in PyTorch: Peter Balint
-\item Research/design a possible evolutionary algorithm (for AF optimization): Mitsuhiro Kitajima
-\item Implement the evolutionary algorithm in PyTorch: Peter Balint
-\item Experiment with different evolutionary algorithms (selection, mutation, etc.): Ante Krajinovic
-\item Charts: Ante Krajinovic
-\item Report, editing: Peter Balint
-\end{itemize}
-
-\newpage
 \section{Activation Functions}
 
-Activation functions determine how strongly a neuron ``fires'' and are a fundamental component of artificial neural networks. Their primary role is to introduce non-linearity into the model. Without activation functions, a neural network, regardless of its depth, would collapse into a purely linear function.
+Activation functions determine how strongly a neuron ``fires'' and are a
+fundamental component of artificial neural networks.  Their primary role is
+to introduce non-linearity into the model.  Without activation functions, a
+neural network would collapse into a purely linear function.
 
-Therefore, activation functions are essential for both learning capability and overall performance of neural networks.
+In our work, we use the following activation functions.
 
 \subsection{Classical Activation Functions}
 
@@ -227,39 +167,8 @@ ReLU is computationally efficient and significantly improves training speed and 
 
 \subsection{Modern Activation Functions}
 
-To address limitations of classical approaches, several modern activation functions have been proposed.
-
-\textbf{Leaky ReLU} introduces a small negative slope for negative inputs, preventing dead neurons.
-
-\begin{equation}
-f(x) =
-\begin{cases}
-x & \text{if } x \geq 0 \\
-\alpha x & \text{if } x < 0
-\end{cases}
-\end{equation}
-
-\textbf{PReLU} extends Leaky ReLU by making the negative slope a learnable
-parameter.
-
-\begin{equation}
-f(x) =
-\begin{cases}
-x & \text{if } x \geq 0 \\
-a x & \text{if } x < 0
-\end{cases}
-\quad \text{where } a \text{ is learnable}
-\end{equation}
-
-\textbf{ELU} (Exponential Linear Unit) provides a smoother transition for negative values and improves training stability.
-
-\begin{equation}
-f(x) =
-\begin{cases}
-x & \text{if } x \geq 0 \\
-\alpha (e^{x} - 1) & \text{if } x < 0
-\end{cases}
-\end{equation}
+We also employ the following modern activation functions, which attempt to
+address the limitations of classic activation functions.
 
 \textbf{Swish}, introduced by Google, is defined as:
 
@@ -278,12 +187,6 @@ function:
 f(x) \approx 0.5x \left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}(x + 0.044715x^3)\right)\right)
 \end{equation}
 
-\textbf{Mish} is a more recent activation function characterized by high smoothness and strong information preservation properties, often improving performance in deep networks.
-
-\begin{equation}
-f(x) = x \cdot \tanh(\ln(1 + e^{x}))
-\end{equation}
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5\textwidth]{classic&mod.png}
@@ -291,23 +194,10 @@ f(x) = x \cdot \tanh(\ln(1 + e^{x}))
     \label{fig:meinbild}
 \end{figure}
 
-\subsection{Motivation for New Activation Functions}
-
-Classical activation functions suffer from several well-known issues:
-
-\begin{itemize}
-    \item Vanishing gradients
-    \item Poor gradient flow
-    \item Unstable training behavior
-\end{itemize}
-
-Modern activation functions aim to overcome these limitations by improving:
-
-\begin{itemize}
-    \item Training stability
-    \item Generalization performance
-    \item Convergence speed
-\end{itemize}
+% EA design and description part
+\newpage
+\section{Design of Evolutional Algorithm}
+\input{algorithm}
 
 \newpage
 \section{Experimental Results}
@@ -393,15 +283,17 @@ distributed much more evenly, suggesting that more difficult problems benefit
 from a heterogeneous mixture of activation functions rather than relying on a
 single dominant choice.
 
-\subsection{Summary Comparison}
+\subsection{Summary}
 
-Classical activation functions are simple and computationally efficient but limited in deep architectures. In contrast, modern activation functions are smoother, more stable, and often adaptive or learnable, making them more suitable for deep learning applications.
+Although the algorithm has produced some improvements, it can be said that
+the result is not significantly different from a simple approach with just
+one activation function.
 
-% EA design and description part
-\newpage
-\section{Design of Evolutional Algorithm}
-\input{algorithm}
-
+On the other hand, this observation comes with some caveats: the test data
+sets are still rather small, and the neural networks tested have relatively
+few parameters and layers.  As is usual with machine learning, it may be the
+case that there exist differences only observable on larger datasets and
+networks.
 
 \newpage
 
@@ -424,11 +316,8 @@ Classical activation functions are simple and computationally efficient but limi
 \begin{itemize}
     \item Goodfellow et al. (2016): \textit{Deep Learning}
     \item Nair \& Hinton (2010): ReLU
-    \item Maas et al. (2013): Leaky ReLU
-    \item Clevert et al. (2015): ELU
     \item Ramachandran et al. (2017): Swish
     \item Hendrycks \& Gimpel (2016): GELU
-    \item  Mish Activation Function (2019): Misra 
 \end{itemize}
 
 \end{document}
