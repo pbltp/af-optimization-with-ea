@@ -46,7 +46,7 @@ measuring the effectiveness of training on a variable set of activation
 functions ($W$) versus a single set of optimized activation functions
 ($W_2$).
 
-\subsection{Proposal of Operators}
+\subsection{Employed Operators}
 \subsubsection{Selection}
 For the selection of individuals from the current generation $P^t$ to the next generation $P^{t+1}$, we use tournament selection. We initially set $k=2$, meaning each tournament involves 2 randomly selected individuals from $P^t$.
 \begin{algorithm}[H]
@@ -68,7 +68,7 @@ For the selection of individuals from the current generation $P^t$ to the next g
 \end{algorithm}
 \subsubsection{Crossover}
 We use uniform crossover. The algorithm takes two parents as input and returns one child.
-The probability of crossover is initially set to $0.8$. Although this probability may be varied in experiments, it will remain high.
+The probability of crossover is set to $0.8$.
 \begin{algorithm}[H]
 \caption{Crossover($f_A, f_B$)}
 \label{alg:crossover}
@@ -83,7 +83,7 @@ The probability of crossover is initially set to $0.8$. Although this probabilit
 \end{algorithm}
 \subsubsection{Mutation}
 Mutation is implemented in the form of randomly drawing functions from the function pool to replace selected elements in an individual.
-The probability of mutation $p_m$ is initially set to $0.01$. Although this probability may be varied in experiments, it will remain very low. Mutation is performed for each element in the individual.
+The probability of mutation $p_m$ is set to $0.01$. Mutation is performed for each element in the individual.
 \begin{algorithm}[H]
 \caption{Mutation($f, l$)}
 \label{alg:mutation}

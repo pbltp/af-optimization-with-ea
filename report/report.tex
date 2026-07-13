@@ -13,7 +13,7 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage[english]{babel}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 
 \textheight 680pt
 \textwidth 460pt
@@ -105,11 +105,12 @@ good target for optimization.
 Our group has been assigned the task of performing this optimization in a
 basic artificial neural network by means of a basic evolutionary algorithm.
 We have performed experiments on benchmarks and data provided by the
-"basics" group. XXX cite
+"basics" group. \cite{BasicsGroup2026}
 
 In a genetic algorithm, there is a set of individuals that are then mutated
 and discarded in each iteration.  In this case, an individual is defined as
-the assignment of activation functions in the neural network's hidden layer.
+the assignment of activation functions in the neural network's hidden layer,
+resembling previous work by Mayer et al.\cite{Mayer2000}
 
 Our approach is as follows.  First, the initial generation is chosen as a
 random list of activation function vectors from a fixed set of activation
@@ -147,28 +148,20 @@ Another classical function is \textbf{tanh}, which outputs values in the range $
 \tanh(x) = \frac{e^{x} - e^{-x}}{e^{x} + e^{-x}}
 \end{equation}
 
-The step function is a historical activation function that outputs either 0 or 1. It is no longer used in modern neural networks because it is not differentiable and therefore incompatible with gradient-based optimization methods.
-\begin{equation}
-f(x) =
-\begin{cases}
-1 & \text{if } x \geq 0 \\
-0 & \text{if } x < 0
-\end{cases}
-\end{equation}
+\subsection{Modern Activation Functions}
 
-A major breakthrough was the introduction of the \textbf{ReLU} (Rectified Linear
-Unit) function:
+We also employ the following modern activation functions, which attempt to
+address the limitations of classic activation functions.  A famous example
+is the \textbf{ReLU} (Rectified Linear Unit) function:
 
 \begin{equation}
 f(x) = \max(0, x)
 \end{equation}
 
-ReLU is computationally efficient and significantly improves training speed and stability. However, it introduces the so-called \textit{dying ReLU} problem, where neurons can become permanently inactive.
-
-\subsection{Modern Activation Functions}
-
-We also employ the following modern activation functions, which attempt to
-address the limitations of classic activation functions.
+ReLU is computationally efficient and significantly improves training speed
+and stability.\cite{NairHinton2010}  It is the default recommended algorithm
+for modern neural networks, although variants are commonly used for more
+specific tasks.\cite{Goodfellow-et-al-2016}
 
 \textbf{Swish}, introduced by Google, is defined as:
 
@@ -176,12 +169,13 @@ address the limitations of classic activation functions.
 f(x) = x \cdot \sigma(x)
 \end{equation}
 
-It has shown strong empirical performance in deep learning models.
+It has shown strong empirical performance in deep learning
+models.\cite{Ramachandran2017}
 
-\textbf{GELU} (Gaussian Error Linear Unit) is widely used in transformer
-architectures such as BERT and GPT and provides smooth gradient behavior,
-especially in large-scale models.  Following is an approximation of the
-function:
+Finally, the \textbf{GELU} (Gaussian Error Linear Unit) is widely used in
+transformer architectures such as BERT and GPT and provides smooth gradient
+behavior, especially in large-scale models.\cite{Hendrycks2023}
+Following is an approximation of the function:
 
 \begin{equation}
 f(x) \approx 0.5x \left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}(x + 0.044715x^3)\right)\right)
@@ -289,11 +283,11 @@ Although the algorithm has produced some improvements, it can be said that
 the result is not significantly different from a simple approach with just
 one activation function.
 
-On the other hand, this observation comes with some caveats: the test data
-sets are still rather small, and the neural networks tested have relatively
-few parameters and layers.  As is usual with machine learning, it may be the
-case that there exist differences only observable on larger datasets and
-networks.
+On the other hand, these observations come with some caveats.  In
+particular, the test data sets are relatively small, and the neural networks
+tested have few parameters and layers.  Hence, as is usual with machine
+learning, it may be the case that larger datasets and networks would present
+more significant differences.
 
 \newpage
 
@@ -307,17 +301,8 @@ networks.
 
 \end{itemize}
 
-
 % real scientific references
-\bibliography{}		% .bib files here
-
-\section{References}
-
-\begin{itemize}
-    \item Goodfellow et al. (2016): \textit{Deep Learning}
-    \item Nair \& Hinton (2010): ReLU
-    \item Ramachandran et al. (2017): Swish
-    \item Hendrycks \& Gimpel (2016): GELU
-\end{itemize}
+\bibliographystyle{IEEEtran}
+\bibliography{refs.bib}		% .bib files here
 
 \end{document}
