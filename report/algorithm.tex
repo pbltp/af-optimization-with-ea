@@ -1,95 +1,141 @@
-\subsection{Overview}
-In this section, we describe how we have designed the evolutionary algorithm for
-optimizing the distribution of activation functions in the hidden layer(s) of a neural network.
-As an assumption, we consider a neural network with one or more hidden layers.
+In this section, we describe how we have designed the evolutionary algorithm for optimizing the distribution of activation functions in the hidden layer(s) of a neural network.
+
+\subsection{Encoding}
+In this Work, we consider a neural network with one or more hidden layers.
+
 Let \(v=\{v_1, v_2, \dots, v_n\} \) be a raw output of the hidden layer and 
 \(f = \{f_1, f_2, \dots, f_n\}\) be the activation functions applied to each neuron in the hidden layer, respectively,
 where \(f_i \in \mathcal{F}\) for \(i=1,\dots,n\) and \(\mathcal{F}\) is the set of activation functions (we call \(\mathcal{F}\) the ``function pool'').
-Let \(\{B_0, \dots, B_m\}\) be the set of mini-batches, i.e., $m$ partitions of the full training dataset $B$.
-\subsection{Fitness Evaluation}
-Fitness is evaluated without any gradient update: the network weights $W$ are held fixed, and the error on the current mini-batch $B_b$ is measured.
-All individuals in a given generation are evaluated on the same mini-batch, so fitness differences reflect only the activation function distribution.
-The network weights $W$ are initialized once at the start and are updated for every generation using one mini-batch training step on $B_b$.
-After each generation, the mini-batch index advances ($b \leftarrow b+1$); once all mini-batches are exhausted, the training set is shuffled and $b$ is reset to $0$.
-\subsection{Algorithm}
-We use a simple genetic algorithm for the optimization.
+Let \(\{B_0, \dots, B_m\}\) be the set of mini-batches with fixed size, i.e., $m$ partitions of the full training dataset $B$.
 
-\begin{algorithm}[H]
-\caption{Optimization of Activation Function Distribution}
-\label{alg:optimization}
-\begin{algorithmic}[1]
-\REQUIRE Population $P$ of size $M$, function pool $\mathcal{F} = \{f_1, \dots, f_n\}$, max generations $g$, mini-batches $\{B_0, \dots, B_m\}$
-\STATE Initialize $P^0$ with random functions from $\mathcal{F}$ for each individual $i \in \{1,\dots,M\}$
-\STATE Initialize network weights $W$ randomly; set mini-batch index $b \leftarrow 0$
-\STATE Evaluate all individuals in $P^0$ on $B_0$ (no training, $W$ fixed)
-\FOR{$t = 0$ to $g$}
-    \FOR{$i = 1$ to $M$}
-        \STATE Evaluate fitness of $P^t_i$ on $B_b$ with $W$ fixed (no training)
-    \ENDFOR
-    \STATE Select new population $P^{t+1}$ from $P^t$ using selection operator
-    \STATE Mutate $P^{t+1}$ using mutation operator
-    \FOR{$i = 1$ to $M$}
-        \STATE Train $W$ for one step on $B_b$ with activation functions $P^{t+1}_i$
-    \ENDFOR
-    \STATE $b \leftarrow b + 1$; if $b > m$, shuffle training set and $b \leftarrow 0$
-\ENDFOR
-\STATE Set champion $C \leftarrow \arg\max_{f \in P^t} fitness(f)$
-\RETURN $C$
-\end{algorithmic}
-\end{algorithm}
+In the context of the evolutionary algorithm, $f$ also serves directly as the genotype
+of an individual. 
+
+The phenotype is constructed directly from this genotype. 
+Each gene $f_i$ is assigned to neuron $i$'s activation function.
+The phenotype is therefore the configuration of activation functions in the hidden layer.
+
+For example, for a hidden layer $v = \{v_1, v_2, v_3, v_4\}$ and $\mathcal{F} = \{\text{ReLU}, \text{Tanh}, \text{Sigmoid}\}$,
+the individual $f = (\text{ReLU}, \text{Tanh}, \text{Tanh}, \text{Sigmoid})$
+assigns ReLU to $v_1$, Tanh to $v_2$ and $v_3$, and Sigmoid to $v_4$.
+
+\subsection{Fitness Evaluation}
+Fitness quantifies how well a given activation function assignment $f$ performs
+on the current task. It is defined as the network's error on the current
+mini-batch $B_b$, computed with the network weights $W$, which is fixed during the evaluation of a generation. 
+Because every individual in a generation is
+evaluated on the same weights $W$ and the same mini-batch $B_b$, differences in
+fitness across individuals can only be attributed to differences in their
+activation function assignment, not to differences in training progress.
+
+The weights $W$ are initialized once at
+the start of the algorithm. After each generation's selection and mutation
+step, $W$ is updated by a single training step on $B_b$, using the newly formed
+population $P^{t+1}$. The mini-batch index $b$ then advances by one
+($b \leftarrow b+1$). Once all mini-batches have been used, the training set is
+reshuffled and $b$ is reset to $0$.
+
+\section{Optimization Process}
+
+An Optimization Algorithm proceeds as follows. 
+The population $P^0$ is initialized with $M$ individuals, each a randomly generated genotype.
+The network weights $W$ are initialized once randomly.
+
+Each generation $t$ then proceeds in three stages. First, every individual
+$P^t_i$ in the current population is evaluated for fitness: its genotype is
+decoded into a phenotype (i.e., an activation function assignment), and the
+resulting network's error on the current mini-batch $B_b$ is measured with
+$W$ held fixed. Second, a new population $P^{t+1}$ is formed
+from $P^t$ using tournament selection followed by mutation. 
+Third, the network weights $W$ are updated.
+For each individual in the new population $P^{t+1}$, one training step is
+performed on mini-batch $B_b$ using that individual's activation function
+assignment, with each step continuing from the weights produced by the
+previous individual's step. In other words, a single shared
+weight $W$ is carried through the entire population within a
+generation, updated $M$ times in sequence, once per individual, rather
+than each individual training its own independent copy of $W$. After all $M$
+updates, the mini-batch index advances, cycling back to the start of the
+dataset (after reshuffling) once all mini-batches have been used.
+
+After $g$ generations, the champion $C$ is selected as the individual with
+the highest fitness in the final population $P^g$, i.e., the best-performing genotype found in the last generation evaluated, not the
+best individual seen across the entire run.
+
+%\begin{algorithm}[H]
+%\caption{Optimization of Activation Function Distribution}
+%\label{alg:optimization}
+%\begin{algorithmic}[1]
+%\REQUIRE Population $P$ of size $M$, function pool $\mathcal{F} = \{f_1, \dots, f_n\}$, max generations $g$, mini-batches $\{B_0, \dots, B_m\}$
+%\STATE Initialize $P^0$ with random functions from $\mathcal{F}$ for each individual $i \in \{1,\dots,M\}$
+%\STATE Initialize network weights $W$ randomly; set mini-batch index $b \leftarrow 0$
+%\STATE Evaluate all individuals in $P^0$ on $B_0$ (no training, $W$ fixed)
+%\FOR{$t = 0$ to $g$}
+    %\FOR{$i = 1$ to $M$}
+        %\STATE Evaluate fitness of $P^t_i$ on $B_b$ with $W$ fixed (no training)
+    %\ENDFOR
+    %\STATE Select new population $P^{t+1}$ from $P^t$ using selection operator
+    %\STATE Mutate $P^{t+1}$ using mutation operator
+    %\FOR{$i = 1$ to $M$}
+        %\STATE Train $W$ for one step on $B_b$ with activation functions $P^{t+1}_i$
+    %\ENDFOR
+    %\STATE $b \leftarrow b + 1$; if $b > m$, shuffle training set and $b \leftarrow 0$
+%\ENDFOR
+%\STATE Set champion $C \leftarrow \arg\max_{f \in P^t} fitness(f)$
+%\RETURN $C$
+%\end{algorithmic}
+%\end{algorithm}
 
 \subsection{Retraining}
+After the optimization algorithm finishes, we retrain the champion $C$ in isolation. 
+A new weight is initialized independently of the weight used in the optimization algorithm, 
+and a network using $C$'s activation function assignment is trained for the same number of epochs and over
+the same mini-batches using the same procedure as the optimization algorithm.
 
-After the algorithm finishes, the champion $C$ is trained again on a new
-set of random weights $W_2$ for the same amount of batches.  This allows
-measuring the effectiveness of training on a variable set of activation
-functions ($W$) versus a single set of optimized activation functions
-($W_2$).
-
-\subsection{Employed Operators}
-\subsubsection{Selection}
-For the selection of individuals from the current generation $P^t$ to the next generation $P^{t+1}$, we use tournament selection. We initially set $k=2$, meaning each tournament involves 2 randomly selected individuals from $P^t$.
-\begin{algorithm}[H]
-\caption{Selection($k$)}
-\label{alg:selection}
-\begin{algorithmic}[1]
-\WHILE{$P^{t+1}$ is not full}
-\STATE Select $k$ individuals from $P^t$ uniformly at random
-\STATE Set the best fitting individual as $f_A$
-\STATE Select $k$ individuals from $P^t$ uniformly at random again
-\STATE Set the best fitting individual as $f_B$
-\STATE Execute $Crossover(f_A, f_B)$ with probability $p_c$
-\IF {Crossover is executed}
-\STATE Add $f_C$ to $P^{t+1}$
-\ELSE \STATE Add $\max_{fitness(f)}\{f_A, f_B\}$ to $P^{t+1}$
-\ENDIF
-\ENDWHILE
-\end{algorithmic}
-\end{algorithm}
-\subsubsection{Crossover}
-We use uniform crossover. The algorithm takes two parents as input and returns one child.
-The probability of crossover is set to $0.8$.
-\begin{algorithm}[H]
-\caption{Crossover($f_A, f_B$)}
-\label{alg:crossover}
-\begin{algorithmic}[1]
-\STATE Initialize $f_C$
-\FOR{each $({f_A}_i,{f_B}_i)$ in $f_A, f_B$}
-\STATE ${f_C}_i = {f_A}_i$ with probability $0.5$
-\STATE Otherwise, ${f_C}_i = {f_B}_i$
-\ENDFOR
-\RETURN $f_C$
-\end{algorithmic}
-\end{algorithm}
-\subsubsection{Mutation}
-Mutation is implemented in the form of randomly drawing functions from the function pool to replace selected elements in an individual.
-The probability of mutation $p_m$ is set to $0.01$. Mutation is performed for each element in the individual.
-\begin{algorithm}[H]
-\caption{Mutation($f, l$)}
-\label{alg:mutation}
-\begin{algorithmic}[1]
-\FOR {each element $f_i$ in $f$}
-\STATE Replace $f_i$ with a randomly selected $f_s \in \mathcal{F}\setminus\{f_i\}$ with probability $p_m$
-\ENDFOR
-\end{algorithmic}
-\end{algorithm}
+%\subsection{Employed Operators}
+%\subsubsection{Selection}
+%For the selection of individuals from the current generation $P^t$ to the next generation $P^{t+1}$, we use tournament selection. We initially set $k=2$, meaning each tournament involves 2 randomly selected individuals from $P^t$.
+%\begin{algorithm}[H]
+%\caption{Selection($k$)}
+%\label{alg:selection}
+%\begin{algorithmic}[1]
+%\WHILE{$P^{t+1}$ is not full}
+%\STATE Select $k$ individuals from $P^t$ uniformly at random
+%\STATE Set the best fitting individual as $f_A$
+%\STATE Select $k$ individuals from $P^t$ uniformly at random again
+%\STATE Set the best fitting individual as $f_B$
+%\STATE Execute $Crossover(f_A, f_B)$ with probability $p_c$
+%\IF {Crossover is executed}
+%\STATE Add $f_C$ to $P^{t+1}$
+%\ELSE \STATE Add $\max_{fitness(f)}\{f_A, f_B\}$ to $P^{t+1}$
+%\ENDIF
+%\ENDWHILE
+%\end{algorithmic}
+%\end{algorithm}
+%\subsubsection{Crossover}
+%We use uniform crossover. The algorithm takes two parents as input and returns one child.
+%The probability of crossover is set to $0.8$.
+%\begin{algorithm}[H]
+%\caption{Crossover($f_A, f_B$)}
+%\label{alg:crossover}
+%\begin{algorithmic}[1]
+%\STATE Initialize $f_C$
+%\FOR{each $({f_A}_i,{f_B}_i)$ in $f_A, f_B$}
+%\STATE ${f_C}_i = {f_A}_i$ with probability $0.5$
+%\STATE Otherwise, ${f_C}_i = {f_B}_i$
+%\ENDFOR
+%\RETURN $f_C$
+%\end{algorithmic}
+%\end{algorithm}
+%\subsubsection{Mutation}
+%Mutation is implemented in the form of randomly drawing functions from the function pool to replace selected elements in an individual.
+%The probability of mutation $p_m$ is set to $0.01$. Mutation is performed for each element in the individual.
+%\begin{algorithm}[H]
+%\caption{Mutation($f, l$)}
+%\label{alg:mutation}
+%\begin{algorithmic}[1]
+%\FOR {each element $f_i$ in $f$}
+%\STATE Replace $f_i$ with a randomly selected $f_s \in \mathcal{F}\setminus\{f_i\}$ with probability $p_m$
+%\ENDFOR
+%\end{algorithmic}
+%\end{algorithm}
