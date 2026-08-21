@@ -1,6 +1,7 @@
 In this section, we describe how we have designed the evolutionary algorithm for optimizing the distribution of activation functions in the hidden layer(s) of a neural network.
 
 \subsection{Encoding}
+\label{sec:encoding}
 In this Work, we consider a neural network with one or more hidden layers.
 
 Let \(v=\{v_1, v_2, \dots, v_n\} \) be a raw output of the hidden layer and 
@@ -61,6 +62,27 @@ dataset (after reshuffling) once all mini-batches have been used.
 After $g$ generations, the champion $C$ is selected as the individual with
 the highest fitness in the final population $P^g$, i.e., the best-performing genotype found in the last generation evaluated, not the
 best individual seen across the entire run.
+
+\subsection{Employed Operators}
+Selection, crossover, and mutation in our algorithm follow the standard
+formulations described in \ref{sec:genetic_algorithm}. This section states only the
+specific configuration used in our implementation, in terms of the
+genotype/phenotype representation introduced in \ref{sec:encoding}.
+
+For \emph{selection}, we use tournament selection with tournament size
+$k=2$. Two individuals are drawn uniformly at random from $P^t$, and the
+fitter of the two is kept as $f_A$. The process is repeated independently
+to obtain $f_B$. With probability $p_c = 0.8$, the offspring of crossover
+between $f_A$ and $f_B$ is added to $P^{t+1}$. Otherwise, the fitter of
+$f_A$ and $f_B$ is added directly.
+
+For \emph{crossover}, we use standard uniform crossover. Each gene of the
+offspring's genotype is copied from $f_A$ with probability $0.5$, and from
+$f_B$ otherwise, independently for each of the $n$ genes.
+
+For \emph{mutation}, each gene of the offspring's genotype is
+independently replaced, with probability $p_m = 0.01$, by a function drawn
+at random from the function pool $\mathcal{F}$.
 
 %\begin{algorithm}[H]
 %\caption{Optimization of Activation Function Distribution}
