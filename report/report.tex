@@ -14,6 +14,8 @@
 \usepackage{algorithmic}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{siunitx}
 
 \textheight 680pt
 \textwidth 460pt
@@ -191,106 +193,254 @@ f(x) \approx 0.5x \left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}(x + 0.044715x^3)\rig
 \newpage
 \section{Design of Evolutional Algorithm}
 \input{algorithm}
+\newpage
+\section{Experimental Setup}
 
+The proposed evolutionary algorithm was evaluated on three binary classification benchmarks of increasing difficulty, referred to as \textit{Easy}, \textit{Medium}, and \textit{Hard}. Each benchmark consists of separate training and test datasets and represents a distinct classification problem: two moons, concentric circles, and crossing spirals. To account for the increasing complexity of the classification tasks, different network architectures were used. The \textit{Easy}, \textit{Medium}, and \textit{Hard} benchmarks employed architectures of $2$--$8$--$1$, $2$--$8$--$8$--$1$, and $2$--$16$--$16$--$1$. The corresponding numbers of training epochs were 100, 150, and 250.
+
+The evolutionary algorithm optimizes the assignment of activation functions to individual neurons in the hidden layers. Each individual in the population therefore represents a complete activation-function configuration for a given network architecture. Six activation functions were considered: ReLU, GELU, sigmoid, tanh, SiLU (Swish), and the identity function. In contrast to the hidden layers, the output layer used a fixed sigmoid activation function, as required for binary classification.
+
+The evolutionary population consisted of 100 individuals. Tournament selection with a tournament size of two was used to select individuals for reproduction. Crossover was applied with a probability of 0.80. During crossover, the activation function assigned to each hidden neuron was independently selected from either parent with equal probability. Mutation was applied with a probability of 0.01 and independently replaced the activation function of a neuron with another randomly selected function from the available activation-function set.
+
+The network weights were optimized using stochastic gradient descent (SGD) with a learning rate of 0.01 and zero momentum. Binary cross-entropy (BCE) was used as the loss function, and training was performed using mini-batches of 32 samples. Before training, the input features were standardized to ensure that the input variables were on a comparable scale.
+
+To evaluate the consistency of the evolutionary approach, each benchmark was evaluated over ten independent runs. A reproducible seed sequence was used for the experiments, with the initial seed set to 42. The evolutionary process was performed independently for each run. After completion of the evolutionary phase, the best activation-function configuration obtained by the evolutionary algorithm was retained. The network was subsequently initialized and trained from scratch using this fixed configuration. This retraining step ensured that the final evaluation reflected the performance of the evolved activation-function configuration rather than the partially trained network produced during evolution.
+
+The final models were evaluated on both the training and test datasets. Binary cross-entropy loss and classification accuracy were recorded for each model. Since the primary objective of the experiment was to investigate whether heterogeneous, neuron-specific activation functions can improve classification performance, test accuracy was used as the primary evaluation metric. In addition, the activation-function assignments of the final evolved configurations were recorded to investigate whether particular activation functions were consistently favored by the evolutionary process.
+
+The results were compared with fixed-activation configurations provided by the Basics Group. In these configurations, the same activation function was used throughout the hidden layers. This comparison makes it possible to assess whether allowing the evolutionary algorithm to assign activation functions independently to individual neurons provides an advantage over using a uniform activation function.
+\newpage
+\subsection{Experimental Configuration}
+\begin{table}[ht]
+    \centering
+    \caption{Experimental configuration.}
+    \label{tab:experimental_setup}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{p{0.45\linewidth} p{0.45\linewidth}}
+        \toprule
+        \textbf{Parameter} & \textbf{Configuration} \\
+        \midrule
+        Population size      & 100 \\
+        Tournament size      & 2 \\
+        Crossover probability & 0.80 \\
+        Mutation probability & 0.01 \\
+        Learning rate        & 0.01 \\
+        Momentum             & 0 \\
+        Batch size           & 32 \\
+        Training epochs      & 100 / 150 / 250 \\
+        Random seed          & 42 \\
+        Number of runs       & 10 \\
+        Loss function        & Binary cross-entropy \\
+        Optimizer            & Stochastic gradient descent \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 \newpage
 \section{Experimental Results}
 
-For our experiment, we have implemented the above algorithm using the
-PyTorch framework.\cite{Ansel_PyTorch_2_Faster_2024}
+For our experiments, we implemented the evolutionary algorithm described above using the PyTorch framework.\cite{Ansel_PyTorch_2_Faster_2024}
 
-To evaluate the effectiveness of the evolutionary optimization, each benchmark
-(Easy, Medium, and Hard) was executed ten times. Only the final evolved
-activation function distributions were considered for the evaluation. Baseline
-runs marked as \textit{"functions not fixed"} were excluded from the analysis.
+To evaluate the effectiveness and consistency of the evolutionary optimization, each benchmark (\textit{Easy}, \textit{Medium}, and \textit{Hard}) was executed ten times. The evaluation was based exclusively on the final evolved activation-function distributions obtained after the retraining phase. The intermediate results produced during the evolutionary process, marked as \textit{``functions not fixed''}, were excluded from the analysis because they represent networks whose weights had not yet been retrained using the final evolved activation-function configuration.
 
 \subsection{Average Test Accuracy}
 
-Table1 summarizes the average test accuracy achieved for
-each benchmark.
+Table2 presents the mean test accuracy obtained across the ten evolutionary runs for each benchmark. The individual results of all ten runs are provided in Table3 to illustrate the variation between runs.
+\begin{table}[ht]
+    \centering
+    \caption{Average test accuracy over ten evolutionary runs.}
+    \label{tab:avg_accuracy}
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{lr}
+        \toprule
+        \textbf{Benchmark} & \textbf{Average Test Accuracy} \\
+        \midrule
+        Easy   & 91.40\% \\
+        Medium & \textbf{97.45\%} \\
+        Hard   & 52.15\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\begin{table}[ht]
+    \centering
+    \caption{Test accuracy across the ten evolutionary runs.}
+    \label{tab:run_accuracy}
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{lrrrrrrrrrr}
+        \toprule
+        \textbf{Benchmark}
+        & \textbf{1}
+        & \textbf{2}
+        & \textbf{3}
+        & \textbf{4}
+        & \textbf{5}
+        & \textbf{6}
+        & \textbf{7}
+        & \textbf{8}
+        & \textbf{9}
+        & \textbf{10} \\
+        \midrule
+        Easy
+        & 91.5\% & 92.0\% & 91.5\% & 91.0\%
+        & 92.0\% & 90.5\% & 91.5\% & \textbf{92.5\%}
+        & 91.0\% & 90.5\% \\
 
-\begin{table}[h]
-\centering
-\begin{tabular}{lcc}
-\hline
-Problem & Number of Runs & Average Test Accuracy \\
-\hline
-Easy   & 10 & 91.40\% \\
-Medium & 10 & 97.45\% \\
-Hard   & 10 & 52.15\% \\
-\hline
-\end{tabular}
-\caption{Average test accuracy over ten evolutionary runs.}
-\label{tab:avg_accuracy}
+        Medium
+        & 98.0\% & 99.0\% & 99.0\% & 98.5\%
+        & 98.0\% & 98.5\% & 94.0\% & 92.5\%
+        & \textbf{99.0\%} & 98.0\% \\
+
+        Hard
+        & 53.5\% & 53.0\% & 51.5\% & \textbf{55.5\%}
+        & 50.0\% & 49.5\% & 52.5\% & 51.5\%
+        & 53.0\% & 51.5\% \\
+        \bottomrule
+    \end{tabular}
 \end{table}
 
-The evolutionary search consistently achieved excellent performance on the
-Easy and Medium benchmark problems. In particular, the Medium dataset reached
-an average test accuracy of 97.45\%, indicating that heterogeneous activation
-function assignments can successfully optimize network performance. The Hard
-benchmark remained considerably more challenging, reaching an average accuracy
-of only 52.15\%.
+The evolutionary approach achieved its highest average test accuracy on the \textit{Medium} benchmark, with 97.45\%. The \textit{Easy} benchmark achieved a mean accuracy of 91.40\%, whereas the \textit{Hard} benchmark achieved only 52.15\%. The substantial difference between the Medium and Hard benchmarks indicates that increasing the complexity of the classification problem posed a considerable challenge for the evolutionary approach.
+
 \newpage
+
+\subsection{Comparison with Fixed Activation Functions}
+
+For comparison, Table reports the test accuracy obtained by the Basics Group for networks using a single fixed activation function throughout the hidden layers.
+
+\begin{table}[ht]
+    \centering
+    \caption{Test accuracy of fixed activation functions from the Basic Group.}
+    \label{tab:fixed_activation}
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{lrrrrrrr}
+        \toprule
+        \textbf{Benchmark}
+        & \textbf{ReLU}
+        & \textbf{GELU}
+        & \textbf{Sigmoid}
+        & \textbf{Tanh}
+        & \textbf{SiLU}
+        & \textbf{Identity}
+        & \textbf{Average} \\
+        \midrule
+        Easy
+        & 91.5\%
+        & 91.5\%
+        & 91.0\%
+        & \textbf{92.5\%}
+        & 91.5\%
+        & 92.0\%
+        & \textbf{91.67\%} \\
+
+        Medium
+        & 99.0\%
+        & 99.0\%
+        & 55.5\%
+        & 98.5\%
+        & 99.0\%
+        & 51.0\%
+        & \textbf{83.67\%} \\
+
+        Hard
+        & 52.0\%
+        & 44.5\%
+        & \textbf{53.0\%}
+        & 50.5\%
+        & 47.0\%
+        & 50.0\%
+        & \textbf{49.50\%} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The comparison between the evolutionary approach and the fixed-function configurations is summarized in Table~\ref{tab:7}. The difference is reported in percentage points (pp).
+
+\begin{table}[ht]
+\centering
+\caption{Comparison between the evolutionary approach and the fixed-function baseline.}
+\label{tab:7}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccc}
+    \toprule
+    \textbf{Benchmark}
+    & \textbf{Evolutionary}
+    & \textbf{Fixed Functions}
+    & \textbf{Difference} \\
+    \midrule
+    Easy
+    & 91.40\%
+    & 91.67\%
+    & -0.27\,pp \\
+    Medium
+    & \textbf{97.45\%}
+    & 83.67\%
+    & \textbf{+13.78\,pp} \\
+    Hard
+    & 52.15\%
+    & 49.50\%
+    & +2.65\,pp \\
+    \bottomrule
+\end{tabular}
+
+\end{table}
+
+On the \textit{Easy} benchmark, the evolutionary approach achieved a mean accuracy of 91.40\%, compared with 91.67\% for the fixed-function configurations. Its best result was 92.5\%, matching the best fixed-function result obtained with tanh.
+
+On \textit{Medium}, the evolutionary approach clearly outperformed the fixed-function baseline, achieving a mean accuracy of 97.45\% versus 83.67\%, an improvement of 13.78 percentage points. However, the best individual result of 99.0\% matched the best fixed-function result. Thus, the main advantage was higher average performance rather than a higher maximum accuracy.
+
+On \textit{Hard}, the evolutionary approach achieved 52.15\% on average, compared with 49.50\% for the fixed-function configurations (+2.65 percentage points). Its maximum accuracy was also higher (55.5\% vs. 53.0\%), although both approaches remained close to chance-level performance.
+
+Overall, heterogeneous activation functions showed an advantage primarily on \textit{Medium}, while performance on \textit{Easy} was comparable and \textit{Hard} remained challenging for both approaches. Therefore, the results do not indicate a universal superiority of the evolutionary approach.\newpage
 \subsection{Distribution of Activation Functions}
 
-To better understand which activation functions were preferred by the
-evolutionary algorithm, all activation assignments from the ten optimized runs
-were aggregated.
+To investigate which activation functions were favored by the evolutionary process, the activation-function assignments of the final evolved configurations were aggregated across the ten runs for each benchmark. Only the configurations obtained after the final retraining phase were considered. The six available activation functions were ReLU, GELU, sigmoid, tanh, SiLU (Swish), and Identity.
 
-\begin{table}[h]
-\centering
-\begin{tabular}{lrrrrrrr}
-\hline
-Problem & Identity & ReLU & GELU & Tanh & SiLU & Sigmoid & Total \\
-\hline
-Easy   & 36 & 12 & 8 & 9 & 8 & 7 & 80 \\
-Medium & 40 & 26 & 46 & 25 & 8 & 15 & 160 \\
-Hard   & 44 & 52 & 75 & 51 & 51 & 47 & 320 \\
-\hline
-\end{tabular}
-\caption{Absolute frequency of evolved activation functions.}
-\label{tab:function_counts}
+Because the benchmarks use different network architectures, the absolute number of activation-function assignments is not directly comparable between them. The \textit{Easy}, \textit{Medium}, and \textit{Hard} architectures contain 8, 16, and 32 hidden neurons. The results are therefore expressed as relative frequencies. This normalization allows the activation-function preferences to be compared independently of the number of hidden neurons.
+
+\begin{table}[ht]
+    \centering
+    \caption{Relative distribution of evolved activation functions across ten runs.}
+    \label{tab:function_percentages}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        \textbf{Benchmark}
+        & \textbf{Identity}
+        & \textbf{ReLU}
+        & \textbf{GELU}
+        & \textbf{Tanh}
+        & \textbf{SiLU}
+        & \textbf{Sigmoid} \\
+        \midrule
+        Easy
+        & \textbf{45.00\%} & 15.00\% & 10.00\% & 11.25\% & 10.00\% & 8.75\% \\
+
+        Medium
+        & 25.00\% & 16.25\% & \textbf{28.75\%} & 15.63\% & 5.00\% & 9.38\% \\
+
+        Hard
+        & 13.75\% & 16.25\% & \textbf{23.44\%} & 15.94\% & 15.94\% & 14.69\% \\
+        \bottomrule
+    \end{tabular}
 \end{table}
 
-Since the network architectures contain different numbers of hidden neurons,
-the relative frequency of each activation function provides a more meaningful
-comparison.
+The activation-function distributions differed substantially across the three benchmarks. On \textit{Easy}, Identity was selected most frequently (45.00\%), followed by ReLU (15.00\%), while the remaining functions occurred at similar frequencies. Despite this preference for Identity, the fixed-function configurations showed similar performance (91.0--92.5\%), indicating no clear advantage of Identity when used uniformly.
 
-\begin{table}[h]
-\centering
-\begin{tabular}{lrrrrrr}
-\hline
-Problem & Identity & ReLU & GELU & Tanh & SiLU & Sigmoid \\
-\hline
-Easy   & 45.00\% & 15.00\% & 10.00\% & 11.25\% & 10.00\% & 8.75\% \\
-Medium & 25.00\% & 16.25\% & 28.75\% & 15.63\% & 5.00\% & 9.38\% \\
-Hard   & 13.75\% & 16.25\% & 23.44\% & 15.94\% & 15.94\% & 14.69\% \\
-\hline
-\end{tabular}
-\caption{Relative distribution of evolved activation functions.}
-\label{tab:function_percentages}
-\end{table}
+On \textit{Medium}, GELU (28.75\%) and Identity (25.00\%) were most frequent, followed by ReLU (16.25\%) and tanh (15.63\%), while SiLU was least frequent (5.00\%). Their high frequencies coincided with the highest mean accuracy of 97.45\%. However, these frequencies do not establish causality, as the evolutionary algorithm optimized complete combinations of neuron-specific activation functions.
 
-The Easy benchmark strongly favored the Identity activation function, which
-accounted for 45\% of all selected activations. In contrast, the Medium and
-Hard benchmarks exhibited a clear preference for GELU, representing 28.75\%
-and 23.44\% of all evolved activation functions, respectively. While the Hard
-benchmark still preferred GELU, the remaining activation functions were
-distributed much more evenly, suggesting that more difficult problems benefit
-from a heterogeneous mixture of activation functions rather than relying on a
-single dominant choice.
-
+The \textit{Hard} benchmark showed the most balanced distribution. GELU was most frequent (23.44\%), while the remaining functions occurred between 13.75\% and 16.25\%. Overall, the differing distributions suggest that the evolutionary process adapted its activation-function assignments to the classification problem. Nevertheless, the frequencies should be interpreted as evolutionary preferences rather than evidence that individual activation functions are inherently superior.
+\newpage
 \subsection{Summary}
 
-Although the algorithm has produced some improvements, it can be said that
-the result is not significantly different from a simple approach with just
-one activation function.
+The experimental results demonstrate that evolving activation functions on a per-neuron basis can be beneficial, but that the magnitude of the benefit depends strongly on the classification problem. The evolutionary approach achieved mean test accuracies of 91.40\%, 97.45\%, and 52.15\% on the \textit{Easy}, \textit{Medium}, and \textit{Hard} benchmarks.
 
-On the other hand, these observations come with some caveats.  In
-particular, the test data sets are relatively small, and the neural networks
-tested have few parameters and layers.  Hence, as is usual with machine
-learning, it may be the case that larger datasets and networks would present
-more significant differences.
+Compared with the average performance of the fixed-function configurations, the largest difference was observed on the \textit{Medium} benchmark. Here, the evolutionary approach achieved an improvement of 13.78 percentage points. On the \textit{Easy} benchmark, the evolutionary approach performed almost identically to the fixed-function baseline, with a difference of only -0.27 percentage points. On the \textit{Hard} benchmark, the improvement was 2.65 percentage points, although both approaches remained close to chance-level performance.
 
+The maximum test accuracies provide a complementary perspective. The evolutionary approach reached 92.5\% on \textit{Easy} and 99.0\% on \textit{Medium}, matching the best fixed-function results on both benchmarks. On \textit{Hard}, the evolutionary approach achieved a maximum accuracy of 55.5\%, exceeding the best fixed-function result of 53.0\%. Thus, the primary advantage of the evolutionary approach was not consistently a higher maximum accuracy, but rather its ability to identify high-performing heterogeneous activation-function configurations, particularly on the \textit{Medium} benchmark.
+
+The activation-function distributions further indicate that the evolutionary process did not converge toward a single universally preferred activation function. Identity was strongly favored on \textit{Easy}, GELU and Identity were most frequent on \textit{Medium}, and the distribution was considerably more balanced on \textit{Hard}. This variation suggests that the usefulness of individual activation functions depends on the characteristics of the underlying classification problem.
+
+Overall, the findings provide evidence that heterogeneous activation-function configurations can improve classification performance for specific problems, but they do not establish a consistent advantage over fixed activation functions across all benchmarks. The particularly strong result on the \textit{Medium} benchmark suggests that neuron-specific activation functions may be useful when the classification problem benefits from a combination of different nonlinear transformations. In contrast, the near-chance performance on the \textit{Hard} benchmark indicates that evolving activation functions alone may not be sufficient to solve more challenging classification problems with the architectures and training configurations used in this experiment.
+
+Finally, the relatively small datasets, limited number of benchmark problems, and simple network architectures restrict the generalizability of the findings. The comparison with the fixed-function baseline should also be interpreted cautiously because the reported fixed-function values represent the average of the available activation-function configurations rather than an additional set of repeated evolutionary runs. Future experiments should therefore include a larger number of independent runs, statistical significance testing, confidence intervals, and additional datasets and architectures. Such experiments would provide a stronger basis for determining whether the observed benefits of neuron-specific activation-function evolution generalize beyond the benchmarks investigated here.
 \newpage
 
 % links go here, NOT in references
