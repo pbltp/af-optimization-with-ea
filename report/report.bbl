@@ -45,9 +45,9 @@ P.~Ramachandran, B.~Zoph, and Q.~V. Le, ``Searching for activation functions,''
 \BIBentrySTDinterwordspacing
 
 \bibitem{turc2019}
-I.~Turc, M.-W. Chang, K.~Lee, and K.~Toutanova, ``Well-read students learn
-  better: On the importance of pre-training compact models,'' \emph{arXiv
-  preprint arXiv:1908.08962v2}, 2019.
+I.~Turc, M.-W. Chang \emph{et~al.}, ``Well-read students learn better: On the
+  importance of pre-training compact models,'' \emph{arXiv preprint
+  arXiv:1908.08962v2}, 2019.
 
 \bibitem{Radford2018}
 \BIBentryALTinterwordspacing
@@ -64,18 +64,11 @@ D.~Hendrycks and K.~Gimpel, ``Gaussian error linear units (gelus),'' 2023.
 
 \bibitem{Ansel_PyTorch_2_Faster_2024}
 \BIBentryALTinterwordspacing
-J.~Ansel, E.~Yang, H.~He, N.~Gimelshein, A.~Jain, M.~Voznesensky, B.~Bao,
-  P.~Bell, D.~Berard, E.~Burovski, G.~Chauhan, A.~Chourdia, W.~Constable,
-  A.~Desmaison, Z.~DeVito, E.~Ellison, W.~Feng, J.~Gong, M.~Gschwind, B.~Hirsh,
-  S.~Huang, K.~Kalambarkar, L.~Kirsch, M.~Lazos, M.~Lezcano, Y.~Liang,
-  J.~Liang, Y.~Lu, C.~Luk, B.~Maher, Y.~Pan, C.~Puhrsch, M.~Reso, M.~Saroufim,
-  M.~Y. Siraichi, H.~Suk, M.~Suo, P.~Tillet, E.~Wang, X.~Wang, W.~Wen,
-  S.~Zhang, X.~Zhao, K.~Zhou, R.~Zou, A.~Mathews, G.~Chanan, P.~Wu, and
-  S.~Chintala, ``{PyTorch 2: Faster Machine Learning Through Dynamic Python
-  Bytecode Transformation and Graph Compilation},'' in \emph{29th ACM
-  International Conference on Architectural Support for Programming Languages
-  and Operating Systems, Volume 2 (ASPLOS '24)}.\hskip 1em plus 0.5em minus
-  0.4em\relax ACM, Apr. 2024. [Online]. Available:
+J.~Ansel, E.~Yang \emph{et~al.}, ``{PyTorch 2: Faster Machine Learning Through
+  Dynamic Python Bytecode Transformation and Graph Compilation},'' in
+  \emph{29th ACM International Conference on Architectural Support for
+  Programming Languages and Operating Systems, Volume 2 (ASPLOS '24)}.\hskip
+  1em plus 0.5em minus 0.4em\relax ACM, Apr. 2024. [Online]. Available:
   \url{https://docs.pytorch.org/assets/pytorch2-2.pdf}
 \BIBentrySTDinterwordspacing
 
