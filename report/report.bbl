@@ -21,13 +21,6 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
-\bibitem{BasicsGroup2026}
-\BIBentryALTinterwordspacing
-A.~Schlager, G.~Bacher, S.~Wagner, and T.~Tomandl, ``Ps natural computation -
-  ai basics,'' 2026, last accessed 13.07.2026. [Online]. Available:
-  \url{https://github.com/Andino20/PS_NaturalComputation_SS26}
-\BIBentrySTDinterwordspacing
-
 \bibitem{Mayer2000}
 H.~A.~Mayer, M.~Strapetz, and R.~Fuchs, ``Simultaneous evolution of structure
   and activation function types in generalized multi-layer perceptrons,'' in
@@ -49,6 +42,18 @@ I.~Goodfellow, Y.~Bengio, and A.~Courville, \emph{Deep Learning}.\hskip 1em
 \BIBentryALTinterwordspacing
 P.~Ramachandran, B.~Zoph, and Q.~V. Le, ``Searching for activation functions,''
   2017. [Online]. Available: \url{https://arxiv.org/abs/1710.05941}
+\BIBentrySTDinterwordspacing
+
+\bibitem{turc2019}
+I.~Turc, M.-W. Chang, K.~Lee, and K.~Toutanova, ``Well-read students learn
+  better: On the importance of pre-training compact models,'' \emph{arXiv
+  preprint arXiv:1908.08962v2}, 2019.
+
+\bibitem{Radford2018}
+\BIBentryALTinterwordspacing
+A.~Radford and K.~Narasimhan, ``Improving language understanding by generative
+  pre-training,'' 2018. [Online]. Available:
+  \url{https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf}
 \BIBentrySTDinterwordspacing
 
 \bibitem{Hendrycks2023}

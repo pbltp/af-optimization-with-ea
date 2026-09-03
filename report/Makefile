@@ -1,4 +1,4 @@
-report.pdf: report.tex algorithm.tex report.bbl
+report.pdf: report.tex algorithm.tex report.bbl preliminaries.tex
 	pdflatex report.tex
 
 clean:

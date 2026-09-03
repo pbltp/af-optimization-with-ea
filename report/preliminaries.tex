@@ -1,9 +1,111 @@
+The goal of this experiment is to optimize the distribution of activation
+functions in an artificial neural network using an evolutionary algorithm.
+In a typical artificial neural network, usually only one activation function
+is used for all neurons, but it is also possible to encode a different
+activation function for every neuron.  The distribution of the activation
+functions is a good target for optimization, which we perform using an
+evolutionary algorithm, inspired by previous work by Mayer et
+al.\cite{Mayer2000}
+
+This section discusses the basic concepts of artificial neural networks
+and evolutionary algorithms which are employed in our work.  Subsequent
+sections describe the concrete algorithm, and finally, the result of the
+experiment.
+
 \subsection{Artificial Neural Network}
-%TODO: to be done by Khalil 
+An artificial neural network is composed of a set of neurons organized into
+layers.  Each layer is connected to the next one, sending a signal whose
+strength is dependent on the weights.  These signals are summed up,
+and passed as the input to an activation function whose output determines
+the strength of a neuron in the next layer.  The purpose of an activation
+function therefore is to introduce non-linearity into the model: a network
+without activation functions could be reduced into a single linear function.
+
+Typically, artificial neural networks use a single activation function for
+each neuron, and only the weights are subject of training.  In our
+experiment, this is not the case, as we optimize the activation functions
+together with the weights as well.  We do this by selecting an activation
+function from a predefined list described below.
+
+In the following formulas, we represent the the input to the activation
+function using the variable $x$.
+
+\subsubsection{Classical Activation Functions}
+
+One of the earliest and most commonly used activation functions is the
+\textbf{sigmoid} function. It maps input values into the range $(0, 1)$.
+
+\begin{equation}
+\sigma(x) = \frac{1}{1 + e^{-x}}
+\end{equation}
+
+Sigmoid saturates large positive or negative inputs.  Given that gradients
+of weights in earlier layers are computed with a lot more multiplications
+than later ones, this results in the gradients exponentially shrinking in
+magnitude as well, consequently slowing down learning.  This is known as the
+vanishing gradient problem.
+
+The second classical function we use is \textbf{tanh}, which outputs values
+in the range $(-1, 1)$. Compared to sigmoid, tanh's output is more
+zero-centered, but suffers from similar saturation problems.
+\begin{equation}
+\tanh(x) = \frac{e^{x} - e^{-x}}{e^{x} + e^{-x}}
+\end{equation}
+
+\subsubsection{Modern Activation Functions}
+
+We also employ the following modern activation functions, which address the
+limitations of classic activation functions.  The first example is the
+computationally efficient \textbf{ReLU} (Rectified Linear Unit)
+function\cite{NairHinton2010}, which is the default recommended function for
+modern neural networks.\cite{Goodfellow-et-al-2016}
+
+\begin{equation}
+ReLU(x) = \max(0, x)
+\end{equation}
+
+The second function is \textbf{Swish}, introduced by Google, which has shown
+strong performance in deep learning models.\cite{Ramachandran2017}  It is
+defined as a multiplication of the input with sigmoid:
+
+\begin{equation}
+Swish(x) = x \cdot \sigma(x)
+\end{equation}
+
+The \textbf{GELU} (Gaussian Error Linear Unit) is widely used in transformer
+architectures such as the Bidirectional Encoder Representations from
+Transformers (BERT)\cite{turc2019} and General Pretained Transformer
+(GPT)\cite{Radford2018} and provides smooth gradient behavior, especially in
+large-scale models.\cite{Hendrycks2023} The function is defined as:
+
+\begin{equation}
+GELU(x) = 0.5x (1 + erf(\frac{x}{\sqrt{2}}))
+\end{equation}
+
+where $erf$ is the Gaussian error function.
+
+\subsubsection{Identity Function}
+
+Finally, we allow the selection of the \textbf{identity} function, which
+directly maps the input to the output.  While choosing this for the entire
+network would result in problems of linearity as described before, this is
+not a problem as long as other neurons still introduce nonlinearity with
+different activation functions.
+
+\begin{figure}[hb]
+    \centering
+    \includegraphics[width=0.4\textwidth]{classic&mod.png}
+    \caption{Visual representation of traditional (left) versus modern (right) activation functions.}
+    \label{fig:meinbild}
+\end{figure}
+
+\clearpage
 \subsection{Genetic Algorithm}
 \label{sec:genetic_algorithm}
-Genetic algorithm (GA) is an optimization method inspired by
-natural selection. A population of individuals, each represented by a
+
+To perform the optimization of activation function distribution, our
+experiment employs a genetic algorithm (GA), an optimization method inspired
+by natural selection. A population of individuals, each represented by a
 genotype, is evolved across generations. In each generation, individuals are
 scored using a fitness function, and a new population is formed through
 selection, crossover, and mutation.

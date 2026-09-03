@@ -56,10 +56,9 @@
 
 \vspace{0.4cm}%Date
 \centerline{\today}
-\vspace{5cm}%Authors
+\vspace{4cm}%Authors
 
 %\hline
-\vspace{0.2cm}
 Project Members:\\
 \centerline{Ante Krajnovic, 12244629, ante.krajinovic@stud.plus.ac.at}\\
 \centerline{Khalil Ibrahim, 11803004, khalil.ibrahim2@stud.plus.ac.at}\\
@@ -80,7 +79,7 @@ Correspondence to: \\
 \clearpage
 \end{titlepage}
 
-%Table of Content
+% Table of Content
 % \setcounter{page}{1}
 % \pagenumbering{Roman} %I,II,III... in the TOC
 % \tableofcontents
@@ -92,104 +91,16 @@ Correspondence to: \\
 \pagenumbering{arabic}  %Better if TOC is variable (more than one page)
 \setcounter{page}{1}
 
-\abstract{This is a report for the Natural Computation class of Prof. Mayer
-in 2026, presenting the results of optimizing activation function
-distribution in an artificial neural network using an evolutionary
-algorithm.}
+\abstract{This report presents the results of an experiment for optimizing
+activation function distribution in an artificial neural network using an
+evolutionary algorithm.  When comparing the performance against ANNs with
+fixed activation functions on a predefined enumeration of data sets, we have
+observed an improvement in performance on certain specific problems, but
+found no sufficient evidence that the method provides an improvement across
+the board.}
 
 \section{Introduction}
-
-In a typical artificial neural network, usually only one activation function
-is used for all neurons.  However, it is also possible to encode a different
-activation function for every neuron, with the hope that better results can
-be achieved.  The distribution of the activation functions in this case is a
-good target for optimization.
-
-Our group has been assigned the task of performing this optimization in a
-basic artificial neural network by means of a basic evolutionary algorithm.
-We have performed experiments on benchmarks and data provided by the
-"basics" group. \cite{BasicsGroup2026}
-
-In a genetic algorithm, there is a set of individuals that are then mutated
-and discarded in each iteration.  In this case, an individual is defined as
-the assignment of activation functions in the neural network's hidden layer,
-resembling previous work by Mayer et al.\cite{Mayer2000}
-
-Our approach is as follows.  First, the initial generation is chosen as a
-random list of activation function vectors from a fixed set of activation
-functions.  Then, for each generation, training on a single set of weights
-$W$ is performed using each individual of the population.  The weights are
-kept in the next generation, with only the population being changed.
-
-Population of the next generation is decided using a semi-random selection
-of two highly fitting individuals and then optionally combining these.
-Finally, the resulting function is randomly mutated.  The experiment may
-be considered successful if, after a number of such generations, the
-resulting activation function distribution performs better than a network
-with a uniform activation function.
-
-\newpage
-\section{Activation Functions}
-
-Activation functions determine how strongly a neuron ``fires'' and are a
-fundamental component of artificial neural networks.  Their primary role is
-to introduce non-linearity into the model.  Without activation functions, a
-neural network would collapse into a purely linear function.
-
-In our work, we use the following activation functions.
-
-\subsection{Classical Activation Functions}
-
-One of the earliest and most commonly used activation functions is the \textbf{sigmoid} function. It maps input values into the range $(0, 1)$. However, sigmoid suffers from saturation for large positive or negative inputs, which leads to vanishing gradients and consequently slow learning.
-
-\begin{equation}
-\sigma(x) = \frac{1}{1 + e^{-x}}
-\end{equation}
-
-Another classical function is \textbf{tanh}, which outputs values in the range $(-1, 1)$. Compared to sigmoid, tanh is generally more effective due to its zero-centered output, but it also suffers from saturation problems.
-\begin{equation}
-\tanh(x) = \frac{e^{x} - e^{-x}}{e^{x} + e^{-x}}
-\end{equation}
-
-\subsection{Modern Activation Functions}
-
-We also employ the following modern activation functions, which attempt to
-address the limitations of classic activation functions.  A famous example
-is the \textbf{ReLU} (Rectified Linear Unit) function:
-
-\begin{equation}
-f(x) = \max(0, x)
-\end{equation}
-
-ReLU is computationally efficient and significantly improves training speed
-and stability.\cite{NairHinton2010}  It is the default recommended algorithm
-for modern neural networks, although variants are commonly used for more
-specific tasks.\cite{Goodfellow-et-al-2016}
-
-\textbf{Swish}, introduced by Google, is defined as:
-
-\begin{equation}
-f(x) = x \cdot \sigma(x)
-\end{equation}
-
-It has shown strong empirical performance in deep learning
-models.\cite{Ramachandran2017}
-
-Finally, the \textbf{GELU} (Gaussian Error Linear Unit) is widely used in
-transformer architectures such as BERT and GPT and provides smooth gradient
-behavior, especially in large-scale models.\cite{Hendrycks2023}
-Following is an approximation of the function:
-
-\begin{equation}
-f(x) \approx 0.5x \left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}(x + 0.044715x^3)\right)\right)
-\end{equation}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\textwidth]{classic&mod.png}
-    \caption{Visual representation of traditional (left) versus modern (right) activation functions.}
-    \label{fig:meinbild}
-\end{figure}
+\input{preliminaries}
 
 % EA design and description part
 \newpage
@@ -450,8 +361,8 @@ Finally, the relatively small datasets, limited number of benchmark problems, an
 
 \begin{itemize}
 \item Project Page: \url{http://student.cosy.sbg.ac.at/~pbalint/nc/}
-\item PS Page:
-\url{http://www.cosy.sbg.ac.at/~helmut/Teaching/PSRobotik/}
+\item Basics Group Page: \url{https://github.com/Andino20/PS_NaturalComputation_SS26
+}
 
 \end{itemize}
 
